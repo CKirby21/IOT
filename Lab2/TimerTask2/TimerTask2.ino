@@ -47,7 +47,7 @@ void startTimerBlue(int frequencyHz) {
   
   // Enable the compare interrupt
   TC->INTENSET.reg = 0; // This clears the entire register?
-  TC->INTENSET.bit.MC0 = 1; // This enables the MCO?
+  TC->INTENSET.bit.OVF = 1; 
   NVIC_EnableIRQ(TC3_IRQn);
   TC->CTRLA.reg |= TC_CTRLA_ENABLE;
   while (TC->STATUS.bit.SYNCBUSY == 1); // wait for sync
@@ -63,7 +63,7 @@ void startTimerYellow(int frequencyHz) {
   
   // Enable the compare interrupt
   TC->INTENSET.reg = 0; // This clears the entire register?
-  TC->INTENSET.bit.MC0 = 1; // This enables the MCO?  
+  TC->INTENSET.bit.OVF = 1;  
   NVIC_EnableIRQ(TC4_IRQn);
   TC->CTRLA.reg |= TC_CTRLA_ENABLE;
   while (TC->STATUS.bit.SYNCBUSY == 1); // wait for sync
@@ -89,8 +89,8 @@ void TC3_Handler() {
   TcCount16* TC = (TcCount16*) TC3;
   // If this interrupt is due to the compare register matching the timer count
   // we toggle the LED.
-  if (TC->INTFLAG.bit.MC0 == 1) {
-    TC->INTFLAG.bit.MC0 = 1;
+  if (TC->INTFLAG.bit.OVF == 1) {
+    TC->INTFLAG.bit.OVF = 1;
     // Write callback here!!!
     digitalWrite(PIN_LED_13, isBlueOn);
     isBlueOn = !isBlueOn;
@@ -100,8 +100,8 @@ void TC4_Handler() {
   TcCount16* TC = (TcCount16*) TC4;
   // If this interrupt is due to the compare register matching the timer count
   // we toggle the LED.
-  if (TC->INTFLAG.bit.MC0 == 1) {
-    TC->INTFLAG.bit.MC0 = 1;
+  if (TC->INTFLAG.bit.OVF == 1) {
+    TC->INTFLAG.bit.OVF = 1;
     // Write callback here!!!
     digitalWrite(PIN_LED_RXL, isYellowOn);
     isYellowOn = !isYellowOn;
