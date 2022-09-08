@@ -94,6 +94,10 @@ void TC3_Handler() {
     // Write callback here!!!
     digitalWrite(PIN_LED_13, isBlueOn);
     isBlueOn = !isBlueOn;
+    if (isBlueOn)
+      SerialUSB.println("Blue LED is on");
+    else
+      SerialUSB.println("Blue LED is off");
   }
 }
 void TC4_Handler() {
@@ -105,5 +109,9 @@ void TC4_Handler() {
     // Write callback here!!!
     digitalWrite(PIN_LED_RXL, isYellowOn);
     isYellowOn = !isYellowOn;
+    if (isYellowOn)
+      SerialUSB.println("Yellow LED is on");
+    else 
+      SerialUSB.println("Yellow LED is off");
   }
 }

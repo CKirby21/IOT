@@ -14,8 +14,8 @@ void setup() {
   digitalWrite(PIN_LED_RXL, HIGH);
   
    // Set up the generic clock (GCLK2) used to clock timers
-  REG_GCLK_GENDIV = GCLK_GENDIV_DIV(4) |          // Divide the 48MHz clock source by divisor 3: 32zKHz/(2^(4+1))=1KHz
-                    GCLK_GENDIV_ID(2);            // Select Generic Clock (GCLK) 2
+  REG_GCLK_GENDIV = GCLK_GENDIV_DIV(4) |          // Divide the 32KHz clock source by divisor 3: 32zKHz/(2^(4+1))=1KHz
+                    GCLK_GENDIV_ID(2);            // Select Generic Clock (GCLK) 
   while (GCLK->STATUS.bit.SYNCBUSY);              // Wait for synchronization
 
   GCLK->GENCTRL.reg = GCLK_GENCTRL_ID(2) |        // Select GCLK2
@@ -25,9 +25,9 @@ void setup() {
   while (GCLK->STATUS.bit.SYNCBUSY);              // Wait for synchronization
 
   // Feed GCLK2 to TC3 and TC2
-  REG_GCLK_CLKCTRL = GCLK_CLKCTRL_CLKEN |         // Enable GCLK4 to TC3 and TC2
-                     GCLK_CLKCTRL_GEN_GCLK2 |     // Select GCLK4
-                     GCLK_CLKCTRL_ID_TCC2_TC3;     // Feed the GCLK4 to TC3 and TC2
+  REG_GCLK_CLKCTRL = GCLK_CLKCTRL_CLKEN |         // Enable GCLK2 to TC3 and TC2
+                     GCLK_CLKCTRL_GEN_GCLK2 |     // Select GCLK2
+                     GCLK_CLKCTRL_ID_TCC2_TC3;     // Feed the GCLK2 to TC3 and TC2
   while (GCLK->STATUS.bit.SYNCBUSY);              // Wait for synchronization
 
   REG_TC3_CTRLA |= TC_CTRLA_MODE_COUNT8;           // Set the counter to 8-bit mode
@@ -59,9 +59,17 @@ void TC3_Handler()
   {
     isBlueOn = !isBlueOn;
     digitalWrite(PIN_LED_13, isBlueOn);
+    if (isBlueOn)
+      SerialUSB.println("Blue LED is on");
+    else
+      SerialUSB.println("Blue LED is off");
     if (interruptCount % 2 == 0) {
       digitalWrite(PIN_LED_RXL, isYellowOn);
       isYellowOn = !isYellowOn;
+      if (isYellowOn)
+      SerialUSB.println("Yellow LED is on");
+    else 
+      SerialUSB.println("Yellow LED is off");
     }
     interruptCount++;
     REG_TC3_INTFLAG = TC_INTFLAG_OVF;         // Clear the OVF interrupt flag
