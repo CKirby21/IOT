@@ -7,10 +7,7 @@ ce of wire.
 */
 
 #include <SPI.h>
-
-//Radio Head Library:
 #include <RH_RF95.h>
-
 #include <TemperatureZero.h>
 
 // We need to provide the RFM95 module's chip select and interrupt pins to the
@@ -18,9 +15,13 @@ ce of wire.
 RH_RF95 rf95(12, 6);
 
 int LED = 13; //Status LED is on pin 13
-
-int packetCounter = 0; //Counts the number of packets sent
 long timeSinceLastPacket = 0; //Tracks the time stamp of last packet received
+
+
+// Define Packet
+const int nodeID = 0; // CHANGE for your node
+int packetID = 0;
+unsigned long timestamp = 0;
 
 TemperatureZero TempZero = TemperatureZero();
 
@@ -28,7 +29,6 @@ TemperatureZero TempZero = TemperatureZero();
 // anywhere in the range of 902-928MHz in the Americas.
 // Europe operates in the frequencies 863-870, center frequency at 868MHz.
 // This works but it is unknown how well the radio configures to this frequency:
-//float frequency = 864.1;
 float frequency = 906; //Broadcast frequency
 
 void setup()
@@ -37,9 +37,7 @@ void setup()
 
   SerialUSB.begin(9600);
   TempZero.init();
-  // It may be difficult to read serial messages on startup. The following line
-  // will wait for serial to be ready before continuing. Comment out if not needed.
-//  while (!SerialUSB);
+  while (!SerialUSB);
   SerialUSB.println("RFM Client!");
 
   //Initialize the Radio.
@@ -67,32 +65,35 @@ void setup()
 
 void loop()
 {
-//  SerialUSB.println("Sending message");
-  // Send a message to the other radio
-//  char toSend[] = "pew";
-//  packetCounter = packetCounter++;
-//  SerialUSB.println(toSend);
-//  SerialUSB.println(packetCounter);
+
+  SerialUSB.print("NodeID\t");
+  SerialUSB.println(nodeID);
 
   float avg;
-
   for (int i = 0; i < 5; i++) {
     float temperature = TempZero.readInternalTemperature();
     avg += temperature;
     delay(1000);
   }
-
   avg /= 5;
-  char toSend[100];
-  gcvt(avg, 6, toSend);
-  SerialUSB.print("Internal Temperature is:");
+  SerialUSB.print("Temperature\t");
   SerialUSB.println(avg);
 
-  rf95.send((uint8_t *)toSend, sizeof(toSend));
+  timestamp = millis();
+  SerialUSB.print("Timestamp\t");
+  SerialUSB.println(timestamp);
 
-//  rf95.send((uint8_t *)toSend, sizeof(toSend));
-//  rf95.waitPacketSent();
-//  delay(1000);
+  SerialUSB.print("PacketID\t");
+  SerialUSB.println(packetID);
 
+  char packet[100];
+  sprintf(packet, "%d,%d,%lu,%f", nodeID, packetID, timestamp, avg);
+  SerialUSB.print("Packet\t");
+  SerialUSB.println(packet);
+  
+  rf95.send((uint8_t *)packet, sizeof(packet));
+  rf95.waitPacketSent();
+  packetID++;
 
+  SerialUSB.println();
 }
