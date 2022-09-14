@@ -38,6 +38,8 @@ void setup() {
   SerialUSB.begin(9600);
   // while(!SerialUSB);
   TempZero.init();
+
+  int delayTime = nodeID * 1000;
   
   SerialUSB.println("RFM Client!");
 
@@ -61,6 +63,12 @@ void setup() {
 
   // Transmitter power can range from 14-20dbm.
   rf95.setTxPower(20, false);
+  while(true){
+    if(rf95.available()){
+      break;
+    }
+  }
+  delay(delayTime);
   startTimer(1);
 }
 void loop() {}
