@@ -8,6 +8,7 @@ ce of wire.
  www.github.com/PaulStoffregen/RadioHeadd
 */
 #include <SPI.h>
+#include <FlashStorage.h>
 
 //Radio Head Library:
 #include <RH_RF95.h>
@@ -15,6 +16,12 @@ ce of wire.
 // We need to provide the RFM95 module's chip select and interrupt pins to the
 // rf95 instance below.On the SparkFun ProRF those pins are 12 and 6 respectively.
 RH_RF95 rf95(12, 6);
+
+// Reserve a portion of flash memory to store an "int" variable
+// and call it "my_flash_store".
+FlashStorage(my_flash_store, int);
+// Note: the area of flash memory reserved for the variable is
+// lost every time the sketch is uploaded on the board.
 
 int LED = 13; //Status LED is on pin 13
 int packetCounter = 0; //Counts the number of packets sent
@@ -81,6 +88,14 @@ void loop()
     message = strtok(NULL, ",");
     int errorCode = atoi(message);
 
+    // Print error code
+    if (errorCode > 0) {
+      my_flash_store.write(errorCode);
+      Serial.print("Node ");
+      Serial.print(nodeID);
+      Serial.print("had an error code of ");
+      Serial.println(errorCode)
+    }
   } else
     SerialUSB.println("Recieve failed");
   }
