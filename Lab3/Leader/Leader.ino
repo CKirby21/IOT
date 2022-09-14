@@ -50,6 +50,11 @@ void setup()
   // Set frequency
   rf95.setFrequency(frequency);
   // Transmitter power can range from 14-20dbm.
+  rf95.setTxPower(20, false);
+  uint8_t toSend[] = "Start";  
+  rf95.send(toSend, sizeof(toSend));
+  rf95.waitPacketSent();  
+
   rf95.setTxPower(20, true);
   
 }
@@ -57,14 +62,14 @@ void setup()
 
 void loop()
 {
-  if (rf95.available()){
+  if (rf95.available()) {
     // Should be a message for us now
     uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
     uint8_t len = sizeof(buf);
     if (rf95.recv(buf, &len)){
     digitalWrite(LED, HIGH); //Turn on status LED
     timeSinceLastPacket = millis(); //Timestamp this packet
-    SerialUSB.print((char*)buf);
+    SerialUSB.println((char*)buf);
 
     char *message = strtok((char *)buf, ",");
     int nodeID = atoi(message);
