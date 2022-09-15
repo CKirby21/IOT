@@ -10,6 +10,7 @@
 #define CPU_HZ 48000000
 #define TIMER_PRESCALER_DIV 1024
 void startTimer(int frequencyHz);
+void setWatchdog();
 void setTimerFrequency(TcCount16* TC, int frequencyHz);
 void setTimerRegisters(TcCount16* TC, int frequencyHz);
 void TC4_Handler();
@@ -36,7 +37,7 @@ int exitCode = 0;
 
 void setup() {
   SerialUSB.begin(9600);
-  // while(!SerialUSB);
+  while(!SerialUSB);
   TempZero.init();
 
   int delayTime = nodeID * 1000;
@@ -47,8 +48,7 @@ void setup() {
   if (rf95.init() == false) {
     SerialUSB.println("Radio Init Failed - Freezing");
     while (1);
-  }
-  else {
+  } else {
     //An LED inidicator to let us know radio initialization has completed.
     //    rf95.setModemConfig(Bw125Cr48Sf4096); // slow and reliable?
     SerialUSB.println("Transmitter up!");
@@ -70,8 +70,33 @@ void setup() {
   }
   delay(delayTime);
   startTimer(1);
+  setWatchdog();
 }
 void loop() {}
+
+void setWatchdog() {
+  GCLK->GENDIV.reg = GCLK_GENDIV_ID(2) | GCLK_GENDIV_DIV(4); 
+  // Enable clock generator 2 using low-power KHz oscillator. 
+  // With /64 divisor above, this yields Hz(ish) clock. 
+  GCLK->GENCTRL.reg = GCLK_GENCTRL_ID(2) | 
+                      GCLK_GENCTRL_GENEN | 
+                      GCLK_GENCTRL_SRC_OSCULP32K | 
+                      GCLK_GENCTRL_DIVSEL; 
+
+  while(GCLK->STATUS.bit.SYNCBUSY);
+  
+  REG_GCLK_CLKCTRL = (uint16_t) (GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK2 | GCLK_CLKCTRL_ID_TC6_TC7);
+
+  WDT->CTRL.reg = 0;
+
+  // WDT counts down from 2048
+  WDT->CONFIG.bit.PER    = 0x9;   // Set period for chip reset from the datasheet
+  WDT->EWCTRL.reg        = 0x08;
+  WDT->INTENSET.bit.EW   = 1;      // Enable early warning interrupt
+  WDT->CTRL.bit.WEN      = 0;      // Disable window mode
+
+  WDT->CTRL.bit.ENABLE = 1;
+}
 
 void setTimerFrequency(TcCount16* TC, int frequencyHz) {
   int compareValue = (CPU_HZ / (TIMER_PRESCALER_DIV * frequencyHz)) - 1;
@@ -125,6 +150,10 @@ void TC4_Handler() {
       char payload[10];
       gcvt(averageTemperature, 6, payload);
 
+      if (WDT->INTFLAG.bit.EW) {
+         exitCode = 1;
+      }
+
       // Create packet string
       char packet[100]; 
       sprintf(packet, "%d,%d,%d,%s,%d", nodeID, packetID, timestamp, payload, exitCode);
@@ -139,5 +168,6 @@ void TC4_Handler() {
       averageTemperature = 0;
       packetID++;    
     }
+    WDT->CLEAR.reg = WDT_CLEAR_CLEAR_KEY;
   }
 }
