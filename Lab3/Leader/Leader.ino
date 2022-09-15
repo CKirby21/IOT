@@ -99,7 +99,7 @@ void loop()
       Serial.print("Node ");
       Serial.print(nodeID);
       Serial.print("had an error code of ");
-      Serial.println(errorCode)
+      Serial.println(errorCode);
     }
   } else
     SerialUSB.println("Recieve failed");
