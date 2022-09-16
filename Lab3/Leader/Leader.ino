@@ -1,4 +1,3 @@
-// -I/Users/benfinnegan/Documents/Arduino/libraries/RadioHead-master
 
 /*
  Both the TX and RX ProRF boards will need a wire antenna. We recommend a 3" pie
