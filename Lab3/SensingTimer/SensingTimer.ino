@@ -29,6 +29,7 @@ float frequency = 906; //Broadcast frequency
 
 int LED = 13; //Status LED is on pin 13
 int secondsElapsed = 0;
+// Node ID is specific to each sensor device
 const int nodeID = 1;
 int packetID = 1;
 int timestamp;
