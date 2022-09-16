@@ -26,6 +26,7 @@ FlashStorage(my_flash_store, int);
 int LED = 13; //Status LED is on pin 13
 int packetCounter = 0; //Counts the number of packets sent
 long timeSinceLastPacket = 0; //Tracks the time stamp of last packet received
+int lastPacketIDs[4] = {0,0,0,0};
 
 // The broadcast frequency is set to 921.2, but the SADM21 ProRf operates
 // anywhere in the range of 902-928MHz in the Americas.
@@ -93,13 +94,20 @@ void loop()
     message = strtok(NULL, ",");
     int errorCode = atoi(message);
 
+    int idealPacketID = lastPacketIDs[nodeID] + 1;
+    if (packetID > idealPacketID)
+      errorCode = 2; 
+    lastPacketIDs[nodeID] = packetID;
+      
     // Print error code
     if (errorCode > 0) {
       my_flash_store.write(errorCode);
-      Serial.print("Node ");
-      Serial.print(nodeID);
-      Serial.print("had an error code of ");
-      Serial.println(errorCode);
+      SerialUSB.print("Node ");
+      SerialUSB.print(nodeID);
+      SerialUSB.print(" had an error code of ");
+      SerialUSB.print(my_flash_store.read());
+      SerialUSB.print(" at time ");
+      SerialUSB.println(timestamp);
     }
   } else
     SerialUSB.println("Recieve failed");
