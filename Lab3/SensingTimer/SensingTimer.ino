@@ -18,6 +18,7 @@ void TC4_Handler();
 // We need to provide the RFM95 module's chip select and interrupt pins to the
 // rf95 instance below.On the SparkFun ProRF those pins are 12 and 6 respectively.
 RH_RF95 rf95(12, 6);
+
 TemperatureZero TempZero = TemperatureZero();
 
 // The broadcast frequency is set to 921.2, but the SADM21 ProRf operates
@@ -38,6 +39,7 @@ int exitCode = 0;
 void setup() {
   SerialUSB.begin(9600);
   while(!SerialUSB);
+  
   TempZero.init();
 
   int delayTime = nodeID * 1000;
@@ -50,7 +52,6 @@ void setup() {
     while (1);
   } else {
     //An LED inidicator to let us know radio initialization has completed.
-    //    rf95.setModemConfig(Bw125Cr48Sf4096); // slow and reliable?
     SerialUSB.println("Transmitter up!");
     digitalWrite(LED, HIGH);
     delay(500);
@@ -58,16 +59,25 @@ void setup() {
     delay(500);
   }
 
-  // Set frequency
   rf95.setFrequency(frequency);
 
   // Transmitter power can range from 14-20dbm.
   rf95.setTxPower(20, false);
-  while(true){
-    if(rf95.available()){
-      break;
+
+  uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
+  uint8_t len = sizeof(buf);
+  
+  // Wait until Leader transmits "Start"
+  while(true) {
+    if(rf95.available()) {
+      if (rf95.recv(buf, &len)) {
+        if (!strcmp((char *)buf, "Start")) {
+          break;
+        }
+      }
     }
   }
+  
   delay(delayTime);
   startTimer(1);
   setWatchdog();
@@ -89,8 +99,9 @@ void setWatchdog() {
 
   WDT->CTRL.reg = 0;
 
-  // WDT counts down from 2048
+  // WDT counts down from 4096
   WDT->CONFIG.bit.PER    = 0x9;   // Set period for chip reset from the datasheet
+  // Early warning counts down from 2048
   WDT->EWCTRL.reg        = 0x08;
   WDT->INTENSET.bit.EW   = 1;      // Enable early warning interrupt
   WDT->CTRL.bit.WEN      = 0;      // Disable window mode
@@ -98,13 +109,7 @@ void setWatchdog() {
   WDT->CTRL.bit.ENABLE = 1;
 }
 
-void setTimerFrequency(TcCount16* TC, int frequencyHz) {
-  int compareValue = (CPU_HZ / (TIMER_PRESCALER_DIV * frequencyHz)) - 1;
-  TC->COUNT.reg = map(TC->COUNT.reg, 0, TC->CC[0].reg, 0, compareValue);
-  TC->CC[0].reg = compareValue;
-  while (TC->STATUS.bit.SYNCBUSY == 1);
-}
-
+// Sets ClkGen0 to TC4
 void startTimer(int frequencyHz) {
   REG_GCLK_CLKCTRL = (uint16_t) (GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK0 | GCLK_CLKCTRL_ID_TC4_TC5) ; // MINE
   while ( GCLK->STATUS.bit.SYNCBUSY == 1 ); // wait for sync
@@ -114,13 +119,14 @@ void startTimer(int frequencyHz) {
   setTimerFrequency(TC, frequencyHz);
   
   // Enable the compare interrupt
-  TC->INTENSET.reg = 0; // This clears the entire register?
+  TC->INTENSET.reg = 0;
   TC->INTENSET.bit.OVF = 1;  
   NVIC_EnableIRQ(TC4_IRQn);
   TC->CTRLA.reg |= TC_CTRLA_ENABLE;
   while (TC->STATUS.bit.SYNCBUSY == 1); // wait for sync
 }
 
+// Sets TC4 to 16 bit match mode
 void setTimerRegisters(TcCount16* TC, int frequencyHz) {
   TC->CTRLA.reg &= ~TC_CTRLA_ENABLE; //Disable timer
   while (TC->STATUS.bit.SYNCBUSY == 1); // wait for sync
@@ -136,6 +142,15 @@ void setTimerRegisters(TcCount16* TC, int frequencyHz) {
   while (TC->STATUS.bit.SYNCBUSY == 1); // wait for sync
 }
 
+// Sets TC4 to 1 sec interval
+void setTimerFrequency(TcCount16* TC, int frequencyHz) {
+  int compareValue = (CPU_HZ / (TIMER_PRESCALER_DIV * frequencyHz)) - 1;
+  TC->COUNT.reg = map(TC->COUNT.reg, 0, TC->CC[0].reg, 0, compareValue);
+  TC->CC[0].reg = compareValue;
+  while (TC->STATUS.bit.SYNCBUSY == 1);
+}
+
+// Averages temperature ands transmits every 5 sec
 void TC4_Handler() {
   TcCount16* TC = (TcCount16*) TC4;
   if (TC->INTFLAG.bit.OVF == 1) {
@@ -150,6 +165,7 @@ void TC4_Handler() {
       char payload[10];
       gcvt(averageTemperature, 6, payload);
 
+      // Read Early Warning interrupt bit
       if (WDT->INTFLAG.bit.EW) {
          exitCode = 1;
       }
@@ -166,7 +182,7 @@ void TC4_Handler() {
 //      rf95.waitPacketSent();
 
       averageTemperature = 0;
-      packetID++;    
+      packetID++;
     }
     WDT->CLEAR.reg = WDT_CLEAR_CLEAR_KEY;
   }
