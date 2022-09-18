@@ -242,7 +242,18 @@ struct pins {
 // MOSI 13 / D7
 // CLK  14 / D5
 // SS   16 / D0
-#error "Pin Definitions _PIN_OUT must be 1(HALLARD) or 2 (COMRESULT)"
+// #error "Pin Definitions _PIN_OUT must be 1(HALLARD) or 2 (COMRESULT)"
+struct pins {
+  uint8_t dio0 = 26;
+  uint8_t dio1 = 33;
+  uint8_t dio2 = 32;
+  uint8_t ss = 16; uint8_t rst = 27; // Reset not used
+} pins;
+#define SCK 14
+#define MISO 12
+#define MOSI 13
+#define SS 16
+#define DIO0 26
 #endif
 
 // STATR contains the statictis that are kept by message. 
@@ -508,4 +519,3 @@ struct LoraUp {
 #define MGT_RESET					0x15		// Not a LoRa Gateway Spec message
 #define MGT_SET_SF					0x16
 #define MGT_SET_FREQ				0x17
-

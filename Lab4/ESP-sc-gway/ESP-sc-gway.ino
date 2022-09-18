@@ -1,3 +1,21 @@
+#include <ETH.h>
+#include <WiFi.h>
+#include <WiFiAP.h>
+#include <WiFiClient.h>
+#include <WiFiGeneric.h>
+#include <WiFiMulti.h>
+#include <WiFiScan.h>
+#include <WiFiServer.h>
+#include <WiFiSTA.h>
+#include <WiFiType.h>
+#include <WiFiUdp.h>
+
+#include "Esp32MQTTClient.h"
+#include <HTTPClient.h>
+#include <Arduino.h>
+
+static const char* connectionString = "HostName=PrashantSubediIoTHub.azure-devices.net;DeviceId=iot-hub-1;SharedAccessKey=removed";
+
 #include <SH1106.h>
 #include <SSD1306Spi.h>
 #include <SH1106Wire.h>
@@ -853,69 +871,69 @@ bool UDPconnect() {
 //	- PULL_DATA identifier (1 byte) = 0x02
 //	- Gateway unique identifier (8 bytes) = MAC address
 // ----------------------------------------------------------------------------
-void pullData() {
-
-    uint8_t pullDataReq[12]; 								// status report as a JSON object
-    int pullIndex=0;
-	int i;
-	
-	uint8_t token_h = (uint8_t)rand(); 						// random token
-    uint8_t token_l = (uint8_t)rand();						// random token
-	
-    // pre-fill the data buffer with fixed fields
-    pullDataReq[0]  = PROTOCOL_VERSION;						// 0x01
-    pullDataReq[1]  = token_h;
-    pullDataReq[2]  = token_l;
-    pullDataReq[3]  = PKT_PULL_DATA;						// 0x02
-	// READ MAC ADDRESS OF ESP8266, and return unique Gateway ID consisting of MAC address and 2bytes 0xFF
-    pullDataReq[4]  = MAC_array[0];
-    pullDataReq[5]  = MAC_array[1];
-    pullDataReq[6]  = MAC_array[2];
-    pullDataReq[7]  = 0xFF;
-    pullDataReq[8]  = 0xFF;
-    pullDataReq[9]  = MAC_array[3];
-    pullDataReq[10] = MAC_array[4];
-    pullDataReq[11] = MAC_array[5];
-    //pullDataReq[12] = 0/00; 								// add string terminator, for safety
-	
-    pullIndex = 12;											// 12-byte header
-	
-    //send the update
-	
-	uint8_t *pullPtr;
-	pullPtr = pullDataReq,
-#ifdef _TTNSERVER
-    sendUdp(ttnServer, _TTNPORT, pullDataReq, pullIndex);
-	yield();
-#endif
-
-#if DUSB>=1
-	if (pullPtr != pullDataReq) {
-		Serial.println(F("pullPtr != pullDatReq"));
-		Serial.flush();
-	}
-
-#endif
-#ifdef _THINGSERVER
-	sendUdp(thingServer, _THINGPORT, pullDataReq, pullIndex);
-#endif
-
-#if DUSB>=1
-    if (( debug>=2 ) && ( pdebug & P_MAIN )) {
-		yield();
-		Serial.print(F("M PKT_PULL_DATA request, len=<"));
-		Serial.print(pullIndex);
-		Serial.print(F("> "));
-		for (i=0; i<pullIndex; i++) {
-			Serial.print(pullDataReq[i],HEX);				// debug: display JSON stat
-			Serial.print(':');
-		}
-		Serial.println();
-		if (debug>=2) Serial.flush();
-	}
-#endif
-	return;
-}//pullData
+//void pullData() {
+//
+//    uint8_t pullDataReq[12]; 								// status report as a JSON object
+//    int pullIndex=0;
+//	int i;
+//	
+//	uint8_t token_h = (uint8_t)rand(); 						// random token
+//    uint8_t token_l = (uint8_t)rand();						// random token
+//	
+//    // pre-fill the data buffer with fixed fields
+//    pullDataReq[0]  = PROTOCOL_VERSION;						// 0x01
+//    pullDataReq[1]  = token_h;
+//    pullDataReq[2]  = token_l;
+//    pullDataReq[3]  = PKT_PULL_DATA;						// 0x02
+//	// READ MAC ADDRESS OF ESP8266, and return unique Gateway ID consisting of MAC address and 2bytes 0xFF
+//    pullDataReq[4]  = MAC_array[0];
+//    pullDataReq[5]  = MAC_array[1];
+//    pullDataReq[6]  = MAC_array[2];
+//    pullDataReq[7]  = 0xFF;
+//    pullDataReq[8]  = 0xFF;
+//    pullDataReq[9]  = MAC_array[3];
+//    pullDataReq[10] = MAC_array[4];
+//    pullDataReq[11] = MAC_array[5];
+//    //pullDataReq[12] = 0/00; 								// add string terminator, for safety
+//	
+//    pullIndex = 12;											// 12-byte header
+//	
+//    //send the update
+//	
+//	uint8_t *pullPtr;
+//	pullPtr = pullDataReq,
+//#ifdef _TTNSERVER
+//    sendUdp(ttnServer, _TTNPORT, pullDataReq, pullIndex);
+//	yield();
+//#endif
+//
+//#if DUSB>=1
+//	if (pullPtr != pullDataReq) {
+//		Serial.println(F("pullPtr != pullDatReq"));
+//		Serial.flush();
+//	}
+//
+//#endif
+//#ifdef _THINGSERVER
+//	sendUdp(thingServer, _THINGPORT, pullDataReq, pullIndex);
+//#endif
+//
+//#if DUSB>=1
+//    if (( debug>=2 ) && ( pdebug & P_MAIN )) {
+//		yield();
+//		Serial.print(F("M PKT_PULL_DATA request, len=<"));
+//		Serial.print(pullIndex);
+//		Serial.print(F("> "));
+//		for (i=0; i<pullIndex; i++) {
+//			Serial.print(pullDataReq[i],HEX);				// debug: display JSON stat
+//			Serial.print(':');
+//		}
+//		Serial.println();
+//		if (debug>=2) Serial.flush();
+//	}
+//#endif
+//	return;
+//}//pullData
 
 
 // ----------------------------------------------------------------------------
@@ -1285,6 +1303,12 @@ void setup() {
 #endif
 
 	Serial.println(F("--------------------------------------"));
+
+  if (!Esp32MQTTClient_Init((const uint8_t*)connectionString)){
+    Serial.println("Initializing IoT hub failed.");
+    return;} 
+  else{
+    Serial.println("Initializing IoT hub success.");}
 }//setup
 
 
@@ -1304,197 +1328,13 @@ void setup() {
 //
 // NOTE2: For ESP make sure not to do large array declarations in loop();
 // ----------------------------------------------------------------------------
-void loop ()
-{
-	uint32_t uSeconds;									// micro seconds
-	int packetSize;
-	uint32_t nowSeconds = now();
-	
-	// check for event value, which means that an interrupt has arrived.
-	// In this case we handle the interrupt ( e.g. message received)
-	// in userspace in loop().
-	//
-	stateMachine();									// do the state machine
-	
-	// After a quiet period, make sure we reinit the modem and state machine.
-	// The interval is in seconds (about 15 seconds) as this re-init
-	// is a heavy operation. 
-	// SO it will kick in if there are not many messages for the gateway.
-	// Note: Be careful that it does not happen too often in normal operation.
-	//
-	if ( ((nowSeconds - statr[0].tmst) > _MSG_INTERVAL ) &&
-		(msgTime <= statr[0].tmst) ) 
-	{
-#if DUSB>=1
-		if (( debug>=1 ) && ( pdebug & P_MAIN )) {
-			Serial.print("M REINIT:: ");
-			Serial.print( _MSG_INTERVAL );
-			Serial.print(F(" "));
-			SerialStat(0);
-		}
-#endif
+void loop (){
+  uint32_t uSeconds; // micro seconds
+  int packetSize;
+  uint32_t nowSeconds = now();
+  // check for event value, which means that an interrupt has arrived.
+  // In this case we handle the interrupt ( e.g. message received)
+  // in userspace in loop().
 
-		// startReceiver() ??
-		if ((_cad) || (_hop)) {
-			_state = S_SCAN;
-			sf = SF7;
-			cadScanner();
-		}
-		else {
-			_state = S_RX;
-			rxLoraModem();
-		}
-		writeRegister(REG_IRQ_FLAGS_MASK, (uint8_t) 0x00);
-		writeRegister(REG_IRQ_FLAGS, (uint8_t) 0xFF);			// Reset all interrupt flags
-		msgTime = nowSeconds;
-	}
-
-#if A_SERVER==1
-	// Handle the Web server part of this sketch. Mainly used for administration 
-	// and monitoring of the node. This function is important so it is called at the
-	// start of the loop() function.
-	yield();
-	server.handleClient();
-#endif
-
-#if A_OTA==1
-	// Perform Over the Air (OTA) update if enabled and requested by user.
-	// It is important to put this function early in loop() as it is
-	// not called frequently but it should always run when called.
-	//
-	yield();
-	ArduinoOTA.handle();
-#endif
-
-	// I event is set, we know that we have a (soft) interrupt.
-	// After all necessary web/OTA services are scanned, we will
-	// reloop here for timing purposes. 
-	// Do as less yield() as possible.
-	// XXX 180326
-	if (_event == 1) {
-		return;
-	}
-	else yield();
-
-	
-	// If we are not connected, try to connect.
-	// We will not read Udp in this loop cycle then
-	if (WlanConnect(1) < 0) {
-#if DUSB>=1
-		if (( debug >= 0 ) && ( pdebug & P_MAIN ))
-			Serial.println(F("M ERROR reconnect WLAN"));
-#endif
-		yield();
-		return;										// Exit loop if no WLAN connected
-	}
-	
-	// So if we are connected 
-	// Receive UDP PUSH_ACK messages from server. (*2, par. 3.3)
-	// This is important since the TTN broker will return confirmation
-	// messages on UDP for every message sent by the gateway. So we have to consume them.
-	// As we do not know when the server will respond, we test in every loop.
-	//
-	else {
-		while( (packetSize = Udp.parsePacket()) > 0) {
-#if DUSB>=2
-			Serial.println(F("loop:: readUdp calling"));
-#endif
-			// DOWNSTREAM
-			// Packet may be PKT_PUSH_ACK (0x01), PKT_PULL_ACK (0x03) or PKT_PULL_RESP (0x04)
-			// This command is found in byte 4 (buffer[3])
-			if (readUdp(packetSize) <= 0) {
-#if DUSB>=1
-				if (( debug>0 ) && ( pdebug & P_MAIN ))
-					Serial.println(F("M readUDP error"));
-#endif
-				break;
-			}
-			// Now we know we succesfully received message from host
-			else {
-				//_event=1;								// Could be done double if more messages received
-			}
-		}
-	}
-	
-	yield();					// XXX 26/12/2017
-
-	// stat PUSH_DATA message (*2, par. 4)
-	//	
-
-    if ((nowSeconds - statTime) >= _STAT_INTERVAL) {	// Wake up every xx seconds
-#if DUSB>=1
-		if (( debug>=1 ) && ( pdebug & P_MAIN )) {
-			Serial.print(F("M STAT:: ..."));
-			Serial.flush();
-		}
-#endif
-        sendstat();										// Show the status message and send to server
-#if DUSB>=1
-		if (( debug>=1 ) && ( pdebug & P_MAIN )) {
-			Serial.println(F(" done"));
-			if (debug>=2) Serial.flush();
-		}
-#endif	
-
-		// If the gateway behaves like a node, we do from time to time
-		// send a node message to the backend server.
-		// The Gateway nod emessage has nothing to do with the STAT_INTERVAL
-		// message but we schedule it in the same frequency.
-		//
-#if GATEWAYNODE==1
-		if (gwayConfig.isNode) {
-			// Give way to internal some Admin if necessary
-			yield();
-			
-			// If the 1ch gateway is a sensor itself, send the sensor values
-			// could be battery but also other status info or sensor info
-		
-			if (sensorPacket() < 0) {
-#if DUSB>=1
-				Serial.println(F("sensorPacket: Error"));
-#endif
-			}
-		}
-#endif
-		statTime = nowSeconds;
-    }
-	
-	yield();
-
-	
-	// send PULL_DATA message (*2, par. 4)
-	//
-	nowSeconds = now();
-    if ((nowSeconds - pulltime) >= _PULL_INTERVAL) {	// Wake up every xx seconds
-#if DUSB>=1
-		if (( debug>=2) && ( pdebug & P_MAIN )) {
-			Serial.println(F("M PULL"));
-			if (debug>=1) Serial.flush();
-		}
-#endif
-        pullData();										// Send PULL_DATA message to server
-		startReceiver();
-	
-		pulltime = nowSeconds;
-    }
-
-	
-	// If we do our own NTP handling (advisable)
-	// We do not use the timer interrupt but use the timing
-	// of the loop() itself which is better for SPI
-#if NTP_INTR==0
-	// Set the time in a manual way. Do not use setSyncProvider
-	// as this function may collide with SPI and other interrupts
-	yield();											// 26/12/2017
-	nowSeconds = now();
-	if (nowSeconds - ntptimer >= _NTP_INTERVAL) {
-		yield();
-		time_t newTime;
-		newTime = (time_t)getNtpTime();
-		if (newTime != 0) setTime(newTime);
-		ntptimer = nowSeconds;
-	}
-#endif
-	
-
+  stateMachine(); // do the state machine
 }//loop
