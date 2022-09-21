@@ -242,12 +242,12 @@ struct pins {
 // MOSI 13 / D7
 // CLK  14 / D5
 // SS   16 / D0
-// #error "Pin Definitions _PIN_OUT must be 1(HALLARD) or 2 (COMRESULT)"
 struct pins {
-  uint8_t dio0 = 26;
-  uint8_t dio1 = 33;
-  uint8_t dio2 = 32;
-  uint8_t ss = 16; uint8_t rst = 27; // Reset not used
+ uint8_t dio0 = 26;
+ uint8_t dio1 = 33;
+ uint8_t dio2 = 32;
+ uint8_t ss = 16;
+ uint8_t rst = 27; // Reset not used
 } pins;
 #define SCK 14
 #define MISO 12

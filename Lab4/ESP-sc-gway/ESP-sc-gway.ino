@@ -1,44 +1,3 @@
-#include <ETH.h>
-#include <WiFi.h>
-#include <WiFiAP.h>
-#include <WiFiClient.h>
-#include <WiFiGeneric.h>
-#include <WiFiMulti.h>
-#include <WiFiScan.h>
-#include <WiFiServer.h>
-#include <WiFiSTA.h>
-#include <WiFiType.h>
-#include <WiFiUdp.h>
-
-#include "Esp32MQTTClient.h"
-#include <HTTPClient.h>
-#include <Arduino.h>
-
-static const char* connectionString = "HostName=PrashantSubediIoTHub.azure-devices.net;DeviceId=iot-hub-1;SharedAccessKey=removed";
-
-#include <SH1106.h>
-#include <SSD1306Spi.h>
-#include <SH1106Wire.h>
-#include <OLEDDisplayFonts.h>
-#include <SH1106Brzo.h>
-#include <OLEDDisplay.h>
-#include <SSD1306.h>
-#include <SSD1306Brzo.h>
-#include <SH1106Spi.h>
-#include <SSD1306Wire.h>
-#include <OLEDDisplayUi.h>
-
-#include <ESP32httpUpdate.h>
-
-#include <ESP32WebServer.h>
-
-#include <ArduinoJson.h>
-
-#include <WiFiEsp.h>
-#include <WiFiEspUdp.h>
-#include <WiFiEspClient.h>
-#include <WiFiEspServer.h>
-
 // 1-channel LoRa Gateway for ESP8266
 // Copyright (c) 2016, 2017, 2018 Maarten Westenberg version for ESP8266
 // Version 5.3.3
@@ -98,6 +57,10 @@ static const char* connectionString = "HostName=PrashantSubediIoTHub.azure-devic
 #include "loraFiles.h"
 #include "sensor.h"
 #include "oLED.h"
+
+#include "Esp32MQTTClient.h"
+#include <HTTPClient.h>
+#include <Arduino.h>
 
 extern "C" {
 #include "lwip/err.h"
@@ -220,6 +183,8 @@ uint32_t doneTime = 0;							// Time to expire when CDDONE takes too long
 uint32_t statTime = 0;							// last time we sent a stat message to server
 uint32_t pulltime = 0;							// last time we sent a pull_data request to server
 //uint32_t lastTmst = 0;							// Last activity Timer
+
+static const char* connectionString = "HostName=CadensIOTHub.azure-devices.net;DeviceId=05092001;SharedAccessKey=Y1JEveyyn8vOmNXQMUxBiUrIup35PIdBhhA2mIkd9P4=";
 
 #if A_SERVER==1
 uint32_t wwwtime = 0;
@@ -912,7 +877,7 @@ bool UDPconnect() {
 //		Serial.println(F("pullPtr != pullDatReq"));
 //		Serial.flush();
 //	}
-//
+
 //#endif
 //#ifdef _THINGSERVER
 //	sendUdp(thingServer, _THINGPORT, pullDataReq, pullIndex);
@@ -1303,12 +1268,13 @@ void setup() {
 #endif
 
 	Serial.println(F("--------------------------------------"));
-
   if (!Esp32MQTTClient_Init((const uint8_t*)connectionString)){
     Serial.println("Initializing IoT hub failed.");
-    return;} 
-  else{
-    Serial.println("Initializing IoT hub success.");}
+    return;
+  }
+  else {
+    Serial.println("Initializing IoT hub success.");
+  }
 }//setup
 
 
@@ -1328,13 +1294,15 @@ void setup() {
 //
 // NOTE2: For ESP make sure not to do large array declarations in loop();
 // ----------------------------------------------------------------------------
-void loop (){
-  uint32_t uSeconds; // micro seconds
-  int packetSize;
-  uint32_t nowSeconds = now();
-  // check for event value, which means that an interrupt has arrived.
-  // In this case we handle the interrupt ( e.g. message received)
-  // in userspace in loop().
-
-  stateMachine(); // do the state machine
+void loop ()
+{
+	uint32_t uSeconds;									// micro seconds
+	int packetSize;
+	uint32_t nowSeconds = now();
+	
+	// check for event value, which means that an interrupt has arrived.
+	// In this case we handle the interrupt ( e.g. message received)
+	// in userspace in loop().
+	//
+	stateMachine();									// do the state machine
 }//loop

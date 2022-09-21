@@ -175,8 +175,8 @@
 
 // MQTT definitions, these settings should be standard for TTN
 // and need not changing
-// #define _TTNPORT 1700						// Standard port for TTN
-// #define _TTNSERVER "router.eu.thethings.network"
+//#define _TTNPORT 1700						// Standard port for TTN
+//#define _TTNSERVER "router.eu.thethings.network"
 
 // If you have a second back-end server defined such as Semtech or loriot.io
 // your can define _THINGPORT and _THINGSERVER with your own value.
@@ -192,11 +192,11 @@
 #define _LOCALSERVER 0						// See server definitions for decodes
 
 // Gateway Ident definitions
-#define _DESCRIPTION "Team 1 ESP Gateway"			// Name of the gateway
-#define _EMAIL "cbinder4@huskers.unl.edu"		// Owner
+#define _DESCRIPTION "Caden's Gateway"			// Name of the gateway
+#define _EMAIL "ckirby5@huskers.unl.edu"		// Owner
 #define _PLATFORM "ESP8266"
 #define _LAT 40.8
-#define _LON 96.7
+#define _LON -96.8
 #define _ALT 1								// Altitude
 
 // ntp
@@ -260,7 +260,7 @@ struct wpas {
 //
 wpas wpa[] = {
 	{ "" , "" },							// Reserved for WiFi Manager
-	{ "NU-IoT", "" },
+  { "NU-IoT", "slqnpfpl" },
 	{ "ALLODCB4C", "KirbyTerel20" }
 };
 

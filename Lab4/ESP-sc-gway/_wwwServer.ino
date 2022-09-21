@@ -1257,7 +1257,7 @@ static void wifiData()
 	printIP((IPAddress)WiFi.gatewayIP(),'.',response); 
 	response +="</tr>";
 	response +="<tr><td class=\"cell\">NTP Server</td><td class=\"cell\">"; response+=NTP_TIMESERVER; response+="</tr>";
-	response +="<tr><td class=\"cell\">LoRa Router</td><td class=\"cell\">"; response+=_TTNSERVER; response+="</tr>";
+//	response +="<tr><td class=\"cell\">LoRa Router</td><td class=\"cell\">"; response+=_TTNSERVER; response+="</tr>";
 	response +="<tr><td class=\"cell\">LoRa Router IP</td><td class=\"cell\">"; 
 	printIP((IPAddress)ttnServer,'.',response); 
 	response +="</tr>";
@@ -1403,4 +1403,3 @@ static void interruptData()
 } // interruptData
 
 #endif // A_SERVER==1
-

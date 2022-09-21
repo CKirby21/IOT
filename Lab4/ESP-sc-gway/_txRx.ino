@@ -561,36 +561,37 @@ int buildPacket(uint32_t tmst, uint8_t *buff_up, struct LoraUp LoraUp, bool inte
 	++buff_index;
 	buff_up[buff_index] = 0; 							// add string terminator, for safety
 
-#if STAT_LOG == 1
-    // Do statistics logging. In first version we might only
-    // write part of the record to files, later more
-    addLog( (unsigned char *)(buff_up), buff_index );
-  Serial.println((char *)message);
-  for(int idx=0;idx<messageLength;idx++)
-  {
-    Serial.print(message[idx],HEX);
-    Serial.print(" ");
-  }
-  Serial.println("");
-  Serial.println("start sending events.");
-    char buff[256];
-  //Send the in JSON format
-  String res = "{\"Message\": \"";
-  res.concat((char *)message);
-  res.concat("\"}");
-  // Replace the following line with your data sent to Azure IoTHub
-  snprintf(buff, 256, res.c_str());
-  Serial.println(res);
-  if (Esp32MQTTClient_SendEvent(buff))
+#if STAT_LOG == 1	
+	// Do statistics logging. In first version we might only
+	// write part of the record to files, later more
+   addLog( (unsigned char *)(buff_up), buff_index );
+   Serial.println((char *)message);
+   for(int idx=0;idx<messageLength;idx++)
    {
-    Serial.println("Sending data succeed");
-  }
-  else
-  {
-    Serial.println("Failure...");
-  }
-#endif
-  
+   Serial.print(message[idx],HEX);
+   Serial.print(" ");
+   }
+   Serial.println("");
+   Serial.println("start sending events.");
+   char buff[256];
+   //Send the in JSON format
+   String res = "{\"Message\": \"";
+   res.concat((char *)message);
+   res.concat("\"}");
+   // Replace the following line with your data sent to Azure IoTHub
+   snprintf(buff, 256, res.c_str());
+   Serial.println(res);
+   if (Esp32MQTTClient_SendEvent(buff))
+   {
+   Serial.println("Sending data succeed");
+   }
+   else
+   {
+   Serial.println("Failure...");
+   }
+
+#endif	
+	
 #if DUSB>=1
 	if (( debug>=2 ) && ( pdebug & P_RX )) {
 		Serial.print(F("R RXPK:: "));
