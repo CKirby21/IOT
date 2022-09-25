@@ -42,7 +42,7 @@ iotc.send_property({
 while iotc.is_connected(): 
         iotc.send_telemetry({ 
             'Temperature': str(random.randint(0, 40)), 
-            'Humudity': str(random.randint(0, 40)),
+            'Humidity': str(random.randint(0, 40)),
             'Pressure': str(random.randint(0, 40))  
         }) 
         time.sleep(60)
