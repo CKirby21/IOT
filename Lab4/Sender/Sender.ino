@@ -33,7 +33,7 @@
 // this interval should not also be increased.
 // See this spreadsheet for an easy airtime and duty cycle calculator:
 // https://docs.google.com/spreadsheets/d/1voGAtQAjC1qBmaVuP1ApNKs1ekgUjavHuVQIXyYSvNc
-#define TX_INTERVAL 5000 //Delay between each message in millidecond.
+#define TX_INTERVAL 20000 //Delay between each message in millidecond.
  // Pin mapping for SAMD21
  const lmic_pinmap lmic_pins = {
  .nss = 12,//RFM Chip Select

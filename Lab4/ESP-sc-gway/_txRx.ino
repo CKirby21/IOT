@@ -571,13 +571,58 @@ int buildPacket(uint32_t tmst, uint8_t *buff_up, struct LoraUp LoraUp, bool inte
    Serial.print(message[idx],HEX);
    Serial.print(" ");
    }
+   //Node ID, Packet ID, Timestamp, Temperature
    Serial.println("");
    Serial.println("start sending events.");
    char buff[256];
    //Send the in JSON format
-   String res = "{\"Message\": \"";
-   res.concat((char *)message);
-   res.concat("\"}");
+   String res = "{\"Node ID\": ";
+   int i = 0;
+
+   int k = 0;
+   char data[24] = "";
+   while (message[i] != ',') {
+     data[k] = message[i];
+     i++;
+     k++;
+   }
+   i++;
+   res.concat((char *)data);
+   res.concat(", \"Packet ID\": ");
+
+   k = 0;
+   data[0] = '\0';
+   while (message[i] != ',') {
+     data[k] = message[i];
+     i++;
+     k++;
+   }
+   i++;
+   res.concat((char *)data);
+   res.concat(", \"Timestamp\": ");
+
+   k = 0;
+   data[0] = '\0';
+   while (message[i] != ',') {
+     data[k] = message[i];
+     i++;
+     k++;
+   }
+   i++;
+   res.concat((char *)data);
+   res.concat(", \"Temperature\": ");
+
+   k = 0;
+   data[0] = '\0';
+   while ((message[i] != ',') && i != messageLength) {
+     data[k] = message[i];
+     i++;
+     k++;
+   }
+   i++;
+   res.concat((char *)data);
+
+   res.concat("}");
    // Replace the following line with your data sent to Azure IoTHub
    snprintf(buff, 256, res.c_str());
    Serial.println(res);
