@@ -2,9 +2,13 @@ import random
 import time
 from iotc.models import Command, Property
 from iotc import IoTCClient, IOTCConnectType, IOTCEvents
-scopeId = '0ne007959ED'
-device_id = 'g178ewxy9f'
-device_key = 'o8BTVpJ5IyvrfXu5epr16IwAdQikiA8zWlSNJDWIONs='
+# scopeId = '0ne007959ED'
+# device_id = 'g178ewxy9f'
+# device_key = 'o8BTVpJ5IyvrfXu5epr16IwAdQikiA8zWlSNJDWIONs='
+
+device_key = 'hIBq7isjmSBB91hFlsqJAVycNTHgzJJO9t+gOx8ilC0='
+device_id =  '8mj9oyfuia' 
+scopeId = '0ne00795B6C'
 
 def on_commands(command: Command):
     print(f"{command.name} command was sent")
@@ -34,4 +38,4 @@ while iotc.is_connected():
     'Humidity': str(random.randint(0, 100))
     })
 
-time.sleep(60)
+    time.sleep(60)
