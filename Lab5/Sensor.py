@@ -8,6 +8,9 @@ device_key = 'o8BTVpJ5IyvrfXu5epr16IwAdQikiA8zWlSNJDWIONs='
 
 def on_commands(command: Command):
     print(f"{command.name} command was sent")
+    iotc.send_property({
+        "LastCommandReceived": time.time()
+    })
     command.reply()
 
 iotc = IoTCClient(
@@ -26,7 +29,9 @@ iotc.send_property({
 
 while iotc.is_connected():
     iotc.send_telemetry({
-    'Temperature': str(random.randint(0, 40))
+    'Temperature': str(random.randint(0, 40)),
+    'Pressure': str(random.randint(0, 70)),
+    'Humidity': str(random.randint(0, 100))
     })
 
 time.sleep(60)
