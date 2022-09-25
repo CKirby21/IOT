@@ -4,15 +4,15 @@ import time
 from iotc.models import Command, Property 
 from iotc import IoTCClient, IOTCConnectType, IOTCEvents 
  
+device_key = 'hIBq7isjmSBB91hFlsqJAVycNTHgzJJO9t+gOx8ilC0='
+device_id =  '8mj9oyfuia' 
 scopeId = '0ne00795B6C'
-device_id = '2k2l5n15fp8' 
-device_key = 'OeJ2vvnUXyLLlEASBjrZqBBwekpPEvYTTuVa+eeA4n8=' 
  
     
 def on_commands(command: Command): 
     iotc.send_telemetry({ 
             'Temperature': str(random.randint(0, 40)), 
-            'Humudity': str(random.randint(0, 40)),
+            'Humidity': str(random.randint(0, 40)),
             'Pressure': str(random.randint(0, 40))  
         }) 
     print(f"{command.name} command was sent") 
