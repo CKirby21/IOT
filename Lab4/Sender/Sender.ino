@@ -122,6 +122,7 @@ static void tx_func (osjob_t* job) {
  tx(packet, txdone_func);
  averageTemperature = 0;
  readTemperatureCount = 0;
+ packetID++;
  
  // reschedule job every TX_INTERVAL (plus a bit of random to prevent
  // systematic collisions), unless packets are received, then rx_func
