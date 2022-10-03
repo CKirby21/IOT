@@ -166,16 +166,11 @@ iotc = IoTCClient(
 iotc.connect()
 
 iotc.on(IOTCEvents.IOTC_COMMAND, on_commands)
-iotc.send_property({
-    "LastTurnedOn": time.time()
-})
-# TODO: fix json format and send all of X_test data
-# for row in X_test:
-    # res = dict(zip(X_test.columns.values.tolist(), row))
-    # iotc.send_telemetry(json.dumps(res))
-res = dict(zip(X_test.columns.values.tolist(), str(X_test.iloc[0])))
-iotc.send_telemetry(json.dumps(res).replace("\"", '\''))
-# iotc.send_telemetry({'Location': 'L', 'MinTemp': 'o', 'MaxTemp': 'c', 'Rainfall': 'a', 'Evaporation': 't', 'Sunshine': 'i', 'WindGustDir': 'o', 'WindGustSpeed': 'n', 'WindDir9am': ' ', 'WindDir3pm': ' ', 'WindSpeed9am': ' ', 'WindSpeed3pm': ' ', 'Humidity9am': ' ', 'Humidity3pm': ' ', 'Pressure9am': ' ', 'Pressure3pm': ' ', 'Cloud9am': ' ', 'Cloud3pm': ' ', 'Temp9am': ' ', 'Temp3pm': '4', 'RainToday': '5', 'year': '.', 'month': '0', 'day': '\n'})
+
+# Send 1% of the dataset to IOT Central
+for index, row in X_test.iterrows():
+    telemetry_dict = dict(zip(X_test.columns.values, row))
+    iotc.send_telemetry(telemetry_dict)
 
 X_train, X_test, y_train, y_test = train_test_split(X_train,y_train, test_size = 0.2, random_state = 0)
 # Scale input using just the training set to prevent bias
