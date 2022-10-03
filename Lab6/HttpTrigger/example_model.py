@@ -6,6 +6,10 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import accuracy_score, classification_report
 from sklearn.linear_model import LogisticRegression
+import time
+import json
+from iotc.models import Command, Property
+from iotc import IoTCClient, IOTCConnectType, IOTCEvents
 
 # Load the data
 dataset = 'weatherAUS.csv'
@@ -24,7 +28,7 @@ categorical_features = [
     if rain[column_name].dtype == 'O'
 ]
 numerical_features = [
-    column_name 
+    column_name
     for column_name in rain.columns
     if rain[column_name].dtype != 'O'
 ]
@@ -88,7 +92,7 @@ location_encoding = {
  'NorahHead': 6,
  'NorfolkIsland': 7,
  'Penrith': 8,
- 'Richmond': 9, 
+ 'Richmond': 9,
  'Sydney': 10,
  'SydneyAirport': 11,
  'WaggaWagga': 12,
@@ -123,7 +127,7 @@ location_encoding = {
  'SalmonGums': 41,
  'Walpole': 42,
  'Hobart': 43,
- 'Launceston': 44, 
+ 'Launceston': 44,
  'AliceSprings': 45,
  'Darwin': 46,
  'Katherine': 47,
@@ -143,7 +147,37 @@ print(rain['RainTomorrow'].value_counts())
 X = rain.drop(['RainTomorrow'],axis=1)
 y = rain['RainTomorrow']
 # Split training and test split
-X_train, X_test, y_train, y_test = train_test_split(X,y, test_size = 0.2, random_state = 0)
+X_train, X_test, y_train, y_test = train_test_split(X,y, test_size = 0.01, random_state = 0)
+
+# Send 1% of data to IoT Central
+scopeId = '0ne007959ED'
+device_id = '1srvwcyznuq'
+device_key = 'sgZ3E+xh+SLfE3ayqoFkN1sur8nqQ+VZgtu5cIeWxyc='
+
+def on_commands(command: Command):
+    print(f"{command.name} command was sent")
+    command.reply()
+
+iotc = IoTCClient(
+        device_id,
+        scopeId,
+               IOTCConnectType.IOTC_CONNECT_DEVICE_KEY,
+               device_key)
+iotc.connect()
+
+iotc.on(IOTCEvents.IOTC_COMMAND, on_commands)
+iotc.send_property({
+    "LastTurnedOn": time.time()
+})
+# TODO: fix json format and send all of X_test data
+# for row in X_test:
+    # res = dict(zip(X_test.columns.values.tolist(), row))
+    # iotc.send_telemetry(json.dumps(res))
+res = dict(zip(X_test.columns.values.tolist(), str(X_test.iloc[0])))
+iotc.send_telemetry(json.dumps(res).replace("\"", '\''))
+# iotc.send_telemetry({'Location': 'L', 'MinTemp': 'o', 'MaxTemp': 'c', 'Rainfall': 'a', 'Evaporation': 't', 'Sunshine': 'i', 'WindGustDir': 'o', 'WindGustSpeed': 'n', 'WindDir9am': ' ', 'WindDir3pm': ' ', 'WindSpeed9am': ' ', 'WindSpeed3pm': ' ', 'Humidity9am': ' ', 'Humidity3pm': ' ', 'Pressure9am': ' ', 'Pressure3pm': ' ', 'Cloud9am': ' ', 'Cloud3pm': ' ', 'Temp9am': ' ', 'Temp3pm': '4', 'RainToday': '5', 'year': '.', 'month': '0', 'day': '\n'})
+
+X_train, X_test, y_train, y_test = train_test_split(X_train,y_train, test_size = 0.2, random_state = 0)
 # Scale input using just the training set to prevent bias
 scaler = StandardScaler()
 X_train = scaler.fit_transform(X_train)
@@ -156,11 +190,12 @@ y_pred = classifier_logreg.predict(X_test)
 print(f"Accuracy Score: {accuracy_score(y_test,y_pred)}")
 print("Classifcation report", classification_report(y_test,y_pred))
 
-with open("iot_model", "wb") as model_file: 
+with open("iot_model", "wb") as model_file:
     pickle.dump(classifier_logreg, model_file)
 
-with open("iot_model", "rb") as model_file: 
-    model = pickle.load(model_file) 
+with open("iot_model", "rb") as model_file:
+    model = pickle.load(model_file)
 y_pred_new = classifier_logreg.predict(X_test)
 
 print("Output of loaded model is same as original model ?", all(y_pred == y_pred_new))
+
