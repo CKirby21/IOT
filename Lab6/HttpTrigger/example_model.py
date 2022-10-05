@@ -7,7 +7,6 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import accuracy_score, classification_report
 from sklearn.linear_model import LogisticRegression
 import time
-import json
 from iotc.models import Command, Property
 from iotc import IoTCClient, IOTCConnectType, IOTCEvents
 
@@ -147,7 +146,22 @@ print(rain['RainTomorrow'].value_counts())
 X = rain.drop(['RainTomorrow'],axis=1)
 y = rain['RainTomorrow']
 # Split training and test split
-X_train, X_test, y_train, y_test = train_test_split(X,y, test_size = 0.01, random_state = 0)
+X_train, X_one_percent, y_train, y_one_percent = train_test_split(X,y, test_size = 0.01, random_state = 0)
+X_train, X_test, y_train, y_test = train_test_split(X_train,y_train, test_size = 0.2, random_state = 0)
+# Scale input using just the training set to prevent bias
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+# Train the model
+classifier_logreg = LogisticRegression(solver='liblinear', random_state=0)
+classifier_logreg.fit(X_train, y_train)
+# Test the model accuracy
+y_pred = classifier_logreg.predict(X_test)
+print(f"Accuracy Score: {accuracy_score(y_test,y_pred)}")
+print("Classifcation report", classification_report(y_test,y_pred))
+
+with open("iot_model", "wb") as model_file:
+    pickle.dump(classifier_logreg, model_file)
 
 # Send 1% of data to IoT Central
 scopeId = '0ne007959ED'
@@ -168,29 +182,9 @@ iotc.connect()
 iotc.on(IOTCEvents.IOTC_COMMAND, on_commands)
 
 # Send 1% of the dataset to IOT Central
-for index, row in X_test.iterrows():
-    telemetry_dict = dict(zip(X_test.columns.values, row))
+for index, row in X_one_percent.iterrows():
+    telemetry_dict = dict(zip(X_one_percent.columns.values, row))
     iotc.send_telemetry(telemetry_dict)
-
-X_train, X_test, y_train, y_test = train_test_split(X_train,y_train, test_size = 0.2, random_state = 0)
-# Scale input using just the training set to prevent bias
-scaler = StandardScaler()
-X_train = scaler.fit_transform(X_train)
-X_test = scaler.transform(X_test)
-# Train the model
-classifier_logreg = LogisticRegression(solver='liblinear', random_state=0)
-classifier_logreg.fit(X_train, y_train)
-# Test the model accuracy
-y_pred = classifier_logreg.predict(X_test)
-print(f"Accuracy Score: {accuracy_score(y_test,y_pred)}")
-print("Classifcation report", classification_report(y_test,y_pred))
-
-with open("iot_model", "wb") as model_file:
-    pickle.dump(classifier_logreg, model_file)
-
-with open("iot_model", "rb") as model_file:
-    model = pickle.load(model_file)
-y_pred_new = classifier_logreg.predict(X_test)
-
-print("Output of loaded model is same as original model ?", all(y_pred == y_pred_new))
+    time.sleep(1)
+    # break
 
