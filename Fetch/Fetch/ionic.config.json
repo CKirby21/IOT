@@ -1,0 +1,7 @@
+{
+  "name": "Fetch",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "react"
+}
