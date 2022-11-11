@@ -1,4 +1,20 @@
-import './home.css'
+import './header.css'
+import { IonContent, IonHeader, IonItem, IonLabel, IonList, IonPage, IonTitle, IonToolbar } from '@ionic/react';
 
-// make header component with all the pages and throw this into each of the pages to 
-// slim down the page lists for navigation
+const Header: React.FC = () => {
+  return (
+      <IonList className="listwrapper">
+          <IonItem routerLink="home">
+            <IonLabel>Home</IonLabel>
+          </IonItem>
+          <IonItem routerLink="login">
+            <IonLabel>Login</IonLabel>
+          </IonItem>
+          <IonItem routerLink="register">
+            <IonLabel>Register</IonLabel>
+          </IonItem>
+        </IonList>
+  );
+};
+
+export default Header;

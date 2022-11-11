@@ -1,6 +1,7 @@
 import './login.css';
 import React from 'react';
 import { IonContent, IonHeader, IonItem, IonLabel, IonList, IonPage, IonTitle, IonToolbar } from '@ionic/react';
+import Header from "../../components/header/header";
 
 const Login: React.FC = () => {
   return(
@@ -11,18 +12,7 @@ const Login: React.FC = () => {
           <IonTitle>Login</IonTitle>
         </IonToolbar>
       </IonHeader>
-
-        <IonList className="listwrapper">
-          <IonItem routerLink="home">
-            <IonLabel>Home</IonLabel>
-          </IonItem>
-          <IonItem routerLink="login">
-            <IonLabel>Login</IonLabel>
-          </IonItem>
-          <IonItem routerLink="register">
-            <IonLabel>Register</IonLabel>
-          </IonItem>
-        </IonList>
+        <Header />
       </IonContent>
     </IonPage>
   );

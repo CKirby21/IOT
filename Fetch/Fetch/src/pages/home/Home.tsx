@@ -1,6 +1,7 @@
 import { IonContent, IonHeader, IonItem, IonLabel, IonList, IonPage, IonTitle, IonToolbar } from '@ionic/react';
 import ExploreContainer from '../../components/exploreContainer/ExploreContainer';
 import './Home.css';
+import Header from "../../components/header/header";
 
 const Home: React.FC = () => {
   return (
@@ -11,19 +12,7 @@ const Home: React.FC = () => {
         </IonToolbar>
       </IonHeader>
       <IonContent>
-
-        <IonList className="listwrapper">
-          <IonItem routerLink="home">
-            <IonLabel>Home</IonLabel>
-          </IonItem>
-          <IonItem routerLink="login">
-            <IonLabel>Login</IonLabel>
-          </IonItem>
-          <IonItem routerLink="register">
-            <IonLabel>Register</IonLabel>
-          </IonItem>
-        </IonList>
-
+        <Header />
       </IonContent>
     </IonPage>
   );
