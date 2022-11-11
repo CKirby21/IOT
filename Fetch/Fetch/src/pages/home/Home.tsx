@@ -10,15 +10,9 @@ const Home: React.FC = () => {
           <IonTitle>Home</IonTitle>
         </IonToolbar>
       </IonHeader>
-      <IonContent fullscreen>
-        <IonHeader collapse="condense">
-          <IonToolbar>
-            <IonTitle size="large">Blank</IonTitle>
-          </IonToolbar>
-        </IonHeader>
-        <ExploreContainer />
+      <IonContent>
 
-        <IonList>
+        <IonList className="listwrapper">
           <IonItem routerLink="home">
             <IonLabel>Home</IonLabel>
           </IonItem>

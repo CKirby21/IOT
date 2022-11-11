@@ -12,7 +12,7 @@ const Register: React.FC = () => {
         </IonToolbar>
       </IonHeader>
 
-        <IonList>
+        <IonList className="listwrapper">
           <IonItem routerLink="home">
             <IonLabel>Home</IonLabel>
           </IonItem>
