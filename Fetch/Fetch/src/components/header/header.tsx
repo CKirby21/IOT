@@ -7,6 +7,9 @@ const Header: React.FC = () => {
           <IonItem routerLink="home">
             <IonLabel>Home</IonLabel>
           </IonItem>
+          <IonItem routerLink="fence">
+            <IonLabel>Fence</IonLabel>
+          </IonItem>  
           <IonItem routerLink="login">
             <IonLabel>Login</IonLabel>
           </IonItem>
