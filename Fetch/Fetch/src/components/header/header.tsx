@@ -10,6 +10,9 @@ const Header: React.FC = () => {
           <IonItem routerLink="fence">
             <IonLabel>Fence</IonLabel>
           </IonItem>  
+          <IonItem routerLink="map">
+            <IonLabel>Map</IonLabel>
+          </IonItem>
           <IonItem routerLink="login">
             <IonLabel>Login</IonLabel>
           </IonItem>
