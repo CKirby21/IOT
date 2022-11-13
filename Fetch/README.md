@@ -15,3 +15,6 @@ After installing the necessary tools, use the `npm install` command in the direc
 - `npm install -g @ionic/cli native-run cordova-res` - installs Ionic CLI and other native development tools
 - `cd /Fetch/Fetch`, then run `npm install` to install dependencies
 - in that same directory, run `ionic serve` to open a browser window and serve the site
+
+### Notes
+- Maps API docs: https://react-google-maps-api-docs.netlify.app/ 
