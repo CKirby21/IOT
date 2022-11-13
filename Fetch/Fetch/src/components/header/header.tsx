@@ -10,12 +10,6 @@ const Header: React.FC = () => {
       <IonItem routerLink="register">
         <IonLabel>Register</IonLabel>
       </IonItem>
-      <IonItem routerLink="home">
-        <IonLabel>Home</IonLabel>
-      </IonItem>
-      <IonItem routerLink="fence">
-        <IonLabel>Fence</IonLabel>
-      </IonItem>
       <IonItem routerLink="map">
         <IonLabel>Map</IonLabel>
       </IonItem>

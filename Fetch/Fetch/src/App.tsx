@@ -1,11 +1,9 @@
 import { Redirect, Route } from "react-router-dom";
 import { IonApp, IonRouterOutlet, setupIonicReact } from "@ionic/react";
 import { IonReactRouter } from "@ionic/react-router";
-import Home from "./pages/home/Home";
 import Login from "./pages/login/login";
 import Register from "./pages/register/register";
-import Fence from "./pages/fence/Fence";
-import MapWrapper from "./pages/map/Map";
+import MapWrapper from "./pages/map/MapWrapper";
 
 /* Core CSS required for Ionic components to work properly */
 import "@ionic/react/css/core.css";
@@ -32,12 +30,6 @@ const App: React.FC = () => (
   <IonApp>
     <IonReactRouter>
       <IonRouterOutlet>
-        <Route exact path="/home">
-          <Home />
-        </Route>
-        <Route exact path="/fence">
-          <Fence />
-        </Route>
         <Route exact path="/map">
           <MapWrapper />
         </Route>
