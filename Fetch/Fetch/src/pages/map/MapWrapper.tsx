@@ -12,10 +12,11 @@ import {
   IonGrid,
   IonRow,
   IonCol,
+  IonText,
 } from "@ionic/react";
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState } from "react";
 import Header from "../../components/header/header";
-import { Circle, GoogleMap, LoadScript, Marker, useJsApiLoader} from '@react-google-maps/api';
+import { CircleF, GoogleMap, LoadScript, MarkerF} from '@react-google-maps/api';
 
 const containerStyle = {
   width: '1000px',
@@ -34,11 +35,10 @@ const circleOptions = {
   strokeWeight: 2,
   fillColor: '#FF0000',
   fillOpacity: 0.35,
-  clickable: true,
-  draggable: true,
-  editable: true,
+  clickable: false,
+  draggable: false,
+  editable: false,
   visible: true
-  // zIndex: 1
 }
 
 const minRadius = 100;
@@ -91,13 +91,11 @@ const MapWrapper: React.FC<{}> = () => {
                 center={center}
                 zoom={16}
               >
-              { /*Comment and uncomment to show */ }
-                
-                <Marker
-                  icon={"https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png"}
+                <MarkerF
+                  // icon={"https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png"}
                   position={center}
                 />
-                <Circle center={center} radius={savedRadius} options={circleOptions}/>
+                <CircleF center={center} radius={savedRadius} options={circleOptions}/>
               </GoogleMap>
             </LoadScript>
 
@@ -107,10 +105,15 @@ const MapWrapper: React.FC<{}> = () => {
                 <IonCol>
 
                   <IonItem>
+                    <IonText>
+                      <h1>Fence Settings</h1>
+                    </IonText>
+                  </IonItem>
+
+                  <IonItem>
                     <IonLabel>Saved Radius:</IonLabel>
                     <IonInput
-                      type="number"
-                      value={savedRadius}
+                      value={savedRadius + " meters"}
                       disabled={true}
                     ></IonInput>
                   </IonItem>
@@ -126,7 +129,7 @@ const MapWrapper: React.FC<{}> = () => {
                       onIonInput={(event) => validateRadius(event)}
                     ></IonInput>
                     <IonNote slot="error">
-                      Radius must be a number between {minRadius} and {maxRadius}
+                      Radius must be a number between {minRadius} and {maxRadius} meters
                     </IonNote>
                   </IonItem>
 
