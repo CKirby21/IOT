@@ -18,15 +18,9 @@ import React, { useState } from "react";
 import Header from "../../components/header/header";
 import { CircleF, GoogleMap, LoadScript, MarkerF} from '@react-google-maps/api';
 
-const containerStyle = {
-  width: '1000px',
+const mapContainerStyle = {
+  width: '1100px',
   height: '600px'
-};
-
-// TODO add current location
-const center = {
-  lat: 40.802,
-  lng: -96.734
 };
 
 const circleOptions = {
@@ -41,17 +35,17 @@ const circleOptions = {
   visible: true
 }
 
-const minRadius = 100;
-const maxRadius = 1000;
-
 const MapWrapper: React.FC<{}> = () => {
   
-
-  // Geo Fencing
+  const minRadius = 20;
+  const maxRadius = 1000;
   const [isValidRadius, setIsValidRadius] = useState<boolean>();
   const [radius, setRadius] = useState(minRadius);
-  const [savedRadius, setSavedRadius] = useState<number>(100);
+  const [savedRadius, setSavedRadius] = useState<number>(minRadius);
+  const [center, setCenter] = useState({lat: 0, lng: 0});
+  const [savedCenter, setSavedCenter] = useState({lat: 40.8207, lng: -96.7056});
 
+  /* Functions for Radius */
   const validateRadius = (ev: Event) => {
     const input = (ev.target as HTMLInputElement).value;
     setIsValidRadius(undefined);
@@ -69,6 +63,35 @@ const MapWrapper: React.FC<{}> = () => {
   const saveRadius = () => {
     if (isValidRadius) setSavedRadius(radius);
   };
+  
+  /* Functions for Center */
+  function getCenterSuccess(position: { coords: any; }) {
+    setCenter({lat: position.coords.latitude, lng: position.coords.longitude});
+  }
+  
+  function getCenterError(err: { code: any; message: any; }) {
+    console.warn(`ERROR(${err.code}): ${err.message}`);
+  }
+  
+  const getCenter = () => {
+    const options = {
+      enableHighAccuracy: true,
+      timeout: 5000,
+      maximumAge: 0
+    };
+    navigator.geolocation.getCurrentPosition(getCenterSuccess, getCenterError, options);
+  };
+
+  const saveCenter = () => {
+    if (center.lat !== 0 && center.lng !== 0) setSavedCenter(center);
+  };
+
+  const formatCenter = (centerToFormat: any) => {
+    if (centerToFormat.lat === 0 && centerToFormat.lng === 0) 
+      return "";
+    return centerToFormat.lat.toFixed(3) + ", " + centerToFormat.lng.toFixed(3);
+  };
+
 
   return (
     <IonPage>
@@ -87,15 +110,15 @@ const MapWrapper: React.FC<{}> = () => {
             googleMapsApiKey="AIzaSyBYrl_wYHZ1QBg_0CNqu7XOKbzi9sIjJ2E"
             >
               <GoogleMap
-                mapContainerStyle={containerStyle}
-                center={center}
-                zoom={16}
+                mapContainerStyle={mapContainerStyle}
+                center={savedCenter}
+                zoom={17}
               >
                 <MarkerF
                   // icon={"https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png"}
-                  position={center}
+                  position={savedCenter}
                 />
-                <CircleF center={center} radius={savedRadius} options={circleOptions}/>
+                <CircleF center={savedCenter} radius={savedRadius} options={circleOptions}/>
               </GoogleMap>
             </LoadScript>
 
@@ -109,6 +132,27 @@ const MapWrapper: React.FC<{}> = () => {
                       <h1>Fence Settings</h1>
                     </IonText>
                   </IonItem>
+
+                  <IonItem/>
+
+                  <IonItem>
+                    <IonLabel>Saved Center:</IonLabel>
+                    <IonInput
+                      value={formatCenter(savedCenter)}
+                      disabled={true}
+                    ></IonInput>
+                  </IonItem>
+
+                  <IonItem>
+                    <IonLabel>{"New Center: " + formatCenter(center)}</IonLabel>
+                    <IonButton onClick={() => getCenter()}>Fetch</IonButton>
+                  </IonItem>
+
+                  <IonItem>
+                    <IonButton onClick={() => saveCenter()}>Save</IonButton>
+                  </IonItem>
+
+                  <IonItem/>
 
                   <IonItem>
                     <IonLabel>Saved Radius:</IonLabel>
