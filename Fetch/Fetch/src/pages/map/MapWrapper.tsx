@@ -44,6 +44,8 @@ const MapWrapper: React.FC<{}> = () => {
   const [savedRadius, setSavedRadius] = useState<number>(minRadius);
   const [center, setCenter] = useState({lat: 0, lng: 0});
   const [savedCenter, setSavedCenter] = useState({lat: 40.8207, lng: -96.7056});
+  const [deviceCoordinates, setDeviceCoordinates] = useState({lat: 0, lng: 0});
+  const [deviceUpdateTime, setDeviceUpdateTime] = useState("");
 
   /* Functions for Radius */
   const validateRadius = (ev: Event) => {
@@ -86,10 +88,31 @@ const MapWrapper: React.FC<{}> = () => {
     if (center.lat !== 0 && center.lng !== 0) setSavedCenter(center);
   };
 
-  const formatCenter = (centerToFormat: any) => {
-    if (centerToFormat.lat === 0 && centerToFormat.lng === 0) 
+  const formatCoordinates = (coords: any) => {
+    if (coords.lat === 0 && coords.lng === 0) 
       return "";
-    return centerToFormat.lat.toFixed(3) + ", " + centerToFormat.lng.toFixed(3);
+    return coords.lat.toFixed(3) + ", " + coords.lng.toFixed(3);
+  };
+
+  /* Functions Device Coordinates from Backend */
+  const webSocket = new WebSocket('ws://localhost:3000');
+  webSocket.onmessage = function onMessage(message) {
+    try {
+      const messageData = JSON.parse(message.data);
+      console.log(messageData);
+
+      // time and either temperature or humidity are required
+      if (!messageData.MessageDate || !messageData.IotData.temperature || !messageData.IotData.humidity) {
+        return;
+      }
+
+      // Update the device data
+      setDeviceCoordinates({lat: messageData.IotData.temperature, lng: messageData.IotData.humidity});
+      setDeviceUpdateTime(messageData.MessageDate);
+
+    } catch (err) {
+      console.error(err);
+    }
   };
 
 
@@ -138,13 +161,13 @@ const MapWrapper: React.FC<{}> = () => {
                   <IonItem>
                     <IonLabel>Saved Center:</IonLabel>
                     <IonInput
-                      value={formatCenter(savedCenter)}
+                      value={formatCoordinates(savedCenter)}
                       disabled={true}
                     ></IonInput>
                   </IonItem>
 
                   <IonItem>
-                    <IonLabel>{"New Center: " + formatCenter(center)}</IonLabel>
+                    <IonLabel>{"New Center: " + formatCoordinates(center)}</IonLabel>
                     <IonButton onClick={() => getCenter()}>Fetch</IonButton>
                   </IonItem>
 
@@ -179,6 +202,16 @@ const MapWrapper: React.FC<{}> = () => {
 
                   <IonItem>
                     <IonButton onClick={() => saveRadius()}>Save</IonButton>
+                  </IonItem>
+                  
+                  <IonItem/>
+
+                  <IonItem>
+                    <IonLabel>{"Last Updated: " + deviceUpdateTime}</IonLabel>
+                  </IonItem>
+
+                  <IonItem>
+                    <IonLabel>{"Device: " + formatCoordinates(deviceCoordinates)}</IonLabel>
                   </IonItem>
 
                 </IonCol>
