@@ -16,7 +16,7 @@ import {
 } from "@ionic/react";
 import React, { useState } from "react";
 import Header from "../../components/header/header";
-import { CircleF, GoogleMap, LoadScript, MarkerF} from '@react-google-maps/api';
+import { CircleF, GoogleMap, LoadScript, MarkerF, OverlayViewF} from '@react-google-maps/api';
 
 const mapContainerStyle = {
   width: '1100px',
@@ -34,6 +34,12 @@ const circleOptions = {
   editable: false,
   visible: true
 }
+
+const overlayStyle = {
+  background: 'white',
+  border: '1px solid #ccc',
+  padding: 5
+};
 
 const MapWrapper: React.FC<{}> = () => {
   
@@ -142,6 +148,18 @@ const MapWrapper: React.FC<{}> = () => {
                   position={savedCenter}
                 />
                 <CircleF center={savedCenter} radius={savedRadius} options={circleOptions}/>
+                
+                <OverlayViewF
+                  position={deviceCoordinates}
+                  mapPaneName="floatPane"
+                >
+                  <div style={overlayStyle}>
+                    <p>
+                      {"Last Updated: " + deviceUpdateTime.replace(/[A-Z]/gm, " ")}
+                    </p>
+                  </div>
+                </OverlayViewF>
+
               </GoogleMap>
             </LoadScript>
 
@@ -202,16 +220,6 @@ const MapWrapper: React.FC<{}> = () => {
 
                   <IonItem>
                     <IonButton onClick={() => saveRadius()}>Save</IonButton>
-                  </IonItem>
-                  
-                  <IonItem/>
-
-                  <IonItem>
-                    <IonLabel>{"Last Updated: " + deviceUpdateTime}</IonLabel>
-                  </IonItem>
-
-                  <IonItem>
-                    <IonLabel>{"Device: " + formatCoordinates(deviceCoordinates)}</IonLabel>
                   </IonItem>
 
                 </IonCol>
