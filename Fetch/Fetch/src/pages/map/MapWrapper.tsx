@@ -143,12 +143,13 @@ const MapWrapper: React.FC<{}> = () => {
                 center={savedCenter}
                 zoom={17}
               >
+                {/* Saved Fence Coordinates */}
                 <MarkerF
-                  // icon={"https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png"}
                   position={savedCenter}
                 />
                 <CircleF center={savedCenter} radius={savedRadius} options={circleOptions}/>
                 
+                {/* Dog's Coordinates */}
                 <OverlayViewF
                   position={deviceCoordinates}
                   mapPaneName="floatPane"
@@ -159,6 +160,10 @@ const MapWrapper: React.FC<{}> = () => {
                     </p>
                   </div>
                 </OverlayViewF>
+                <MarkerF
+                  label="Dog"
+                  position={deviceCoordinates}
+                />
 
               </GoogleMap>
             </LoadScript>
