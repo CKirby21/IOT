@@ -184,7 +184,7 @@ uint32_t statTime = 0;							// last time we sent a stat message to server
 uint32_t pulltime = 0;							// last time we sent a pull_data request to server
 //uint32_t lastTmst = 0;							// Last activity Timer
 
-static const char* connectionString = "HostName=CadensIOTHub.azure-devices.net;DeviceId=05092001;SharedAccessKey=Y1JEveyyn8vOmNXQMUxBiUrIup35PIdBhhA2mIkd9P4=";
+static const char* connectionString = "HostName=CadensIOTHub.azure-devices.net;DeviceId=FetchGateway;SharedAccessKey=VLwfetwWHHCp4OjRtDtJIPuhsxsEKIb0+9vxqtdWKYk=";
 
 #if A_SERVER==1
 uint32_t wwwtime = 0;
