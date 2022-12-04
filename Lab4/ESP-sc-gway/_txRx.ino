@@ -571,12 +571,12 @@ int buildPacket(uint32_t tmst, uint8_t *buff_up, struct LoraUp LoraUp, bool inte
    Serial.print(message[idx],HEX);
    Serial.print(" ");
    }
-   //Node ID, Packet ID, Timestamp, Temperature
+   // messageId, deviceId, latitude, longitude
    Serial.println("");
    Serial.println("start sending events.");
    char buff[256];
    //Send the in JSON format
-   String res = "{\"Node ID\": ";
+   String res = "{\"messageId\": ";
    int i = 0;
 
    int k = 0;
@@ -588,7 +588,7 @@ int buildPacket(uint32_t tmst, uint8_t *buff_up, struct LoraUp LoraUp, bool inte
    }
    i++;
    res.concat((char *)data);
-   res.concat(", \"Packet ID\": ");
+   res.concat(", \"deviceId\": \"");
 
    k = 0;
    data[0] = '\0';
@@ -599,7 +599,7 @@ int buildPacket(uint32_t tmst, uint8_t *buff_up, struct LoraUp LoraUp, bool inte
    }
    i++;
    res.concat((char *)data);
-   res.concat(", \"Timestamp\": ");
+   res.concat("\", \"latitude\": ");
 
    k = 0;
    data[0] = '\0';
@@ -610,7 +610,7 @@ int buildPacket(uint32_t tmst, uint8_t *buff_up, struct LoraUp LoraUp, bool inte
    }
    i++;
    res.concat((char *)data);
-   res.concat(", \"Temperature\": ");
+   res.concat(", \"longitude\": ");
 
    k = 0;
    data[0] = '\0';
