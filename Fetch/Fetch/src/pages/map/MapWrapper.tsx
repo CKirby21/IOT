@@ -107,13 +107,13 @@ const MapWrapper: React.FC<{}> = () => {
       const messageData = JSON.parse(message.data);
       console.log(messageData);
 
-      // time and either temperature or humidity are required
-      if (!messageData.MessageDate || !messageData.IotData.temperature || !messageData.IotData.humidity) {
+      // time, latitude and longitude are required
+      if (!messageData.MessageDate || !messageData.IotData.latitude || !messageData.IotData.longitude) {
         return;
       }
 
       // Update the device data
-      setDeviceCoordinates({lat: messageData.IotData.temperature, lng: messageData.IotData.humidity});
+      setDeviceCoordinates({lat: messageData.IotData.latitude, lng: messageData.IotData.longitude});
       setDeviceUpdateTime(messageData.MessageDate);
 
     } catch (err) {
