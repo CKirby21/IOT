@@ -42,6 +42,39 @@ wss.broadcast = (data) => {
   });
 };
 
+// Setup database
+const db = mysql.createPool({
+  host: '127.0.0.1',
+  user: 'newuser',
+  password: 'P@ssword!',
+  database: 'db',
+  port: '3306'
+})
+
+wss.on('connection', function connection(ws) {
+  ws.on('message', function message(data) {
+
+    const dataObject = JSON.parse(data);
+    console.log(dataObject);
+    // Check if message has email and password
+    if (dataObject.email && dataObject.password) {
+
+      // Search for email
+      connection = db.getConnection( (err, connection)=> {
+        if (err) throw (err);
+        console.log ("DB connected successful: " + connection.threadId)
+        connection.query(`'SELECT * FROM users WHERE email = \'${dataObject.email}\' AND password = \'${dataObject.password}\''`, async(err, result) => {
+          if (err) throw err;
+          console.log(result);
+        });
+      });
+
+      // TODO move this inside connection. Send if email was found
+      ws.send("email: true");
+    }
+  }); 
+});
+
 server.listen(process.env.PORT || '3000', () => {
   console.log('Listening on %d.', server.address().port);
 });
