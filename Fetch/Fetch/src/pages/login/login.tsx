@@ -1,5 +1,5 @@
 import "./login.css";
-import React from "react";
+import React, { useContext } from "react";
 import {
   IonContent,
   IonHeader,
@@ -11,10 +11,31 @@ import {
   IonInput,
   IonButton,
   IonCheckbox,
+  NavContext,
 } from "@ionic/react";
 import Header from "../../components/header/header";
+import { useForm } from 'react-hook-form';
+
+// TODO use inputted email and password
+const emailAndPassword = {"email": "example@gmail.com", "password": "password"};
 
 const Login: React.FC = () => {
+
+  const { handleSubmit } = useForm();
+  const { navigate } = useContext(NavContext);
+  const webSocket = new WebSocket('ws://localhost:3000');
+
+  webSocket.onmessage = function onMessage(message) {
+    if (message.data === 'email: true') {
+      console.log('Logged In!');
+      navigate('/map');
+    }
+  };
+  const attemptToLogin = (data:any) => {
+    const json = JSON.stringify(emailAndPassword);
+    webSocket.send(json);
+  }
+
   return (
     <IonPage>
       <IonContent>
@@ -24,7 +45,7 @@ const Login: React.FC = () => {
           </IonToolbar>
         </IonHeader>
         <Header />
-        <form className="ion-padding">
+        <form className="ion-padding" onSubmit={handleSubmit(attemptToLogin)}>
           <IonItem>
             <IonLabel position="floating">Email</IonLabel>
             <IonInput type="email" required />
