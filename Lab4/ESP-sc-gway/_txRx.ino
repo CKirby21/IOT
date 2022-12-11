@@ -580,47 +580,47 @@ int buildPacket(uint32_t tmst, uint8_t *buff_up, struct LoraUp LoraUp, bool inte
    int i = 0;
 
    int k = 0;
-   char data[24] = "";
+   char packetID[5] = "";
    while (message[i] != ',') {
-     data[k] = message[i];
+     packetID[k] = message[i];
      i++;
      k++;
    }
    i++;
-   res.concat((char *)data);
+   res.concat((char *)packetID);
    res.concat(", \"deviceId\": \"");
 
    k = 0;
-   data[0] = '\0';
+   char nodeID[5] = "";
    while (message[i] != ',') {
-     data[k] = message[i];
+     nodeID[k] = message[i];
      i++;
      k++;
    }
    i++;
-   res.concat((char *)data);
+   res.concat((char *)nodeID);
    res.concat("\", \"latitude\": ");
 
    k = 0;
-   data[0] = '\0';
+   char latitude[20] = '\0';
    while (message[i] != ',') {
-     data[k] = message[i];
+     latitude[k] = message[i];
      i++;
      k++;
    }
    i++;
-   res.concat((char *)data);
+   res.concat((char *)latitude);
    res.concat(", \"longitude\": ");
 
    k = 0;
-   data[0] = '\0';
+   char longitude[20] = '\0';
    while ((message[i] != ',') && i != messageLength) {
-     data[k] = message[i];
+     longitude[k] = message[i];
      i++;
      k++;
    }
    i++;
-   res.concat((char *)data);
+   res.concat((char *)longitude);
 
    res.concat("}");
    // Replace the following line with your data sent to Azure IoTHub
