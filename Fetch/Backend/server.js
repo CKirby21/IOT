@@ -3,6 +3,7 @@ const http = require('http');
 const WebSocket = require('ws');
 const path = require('path');
 const EventHubReader = require('./scripts/event-hub-reader.js');
+const mysql = require('mysql');
 
 const iotHubConnectionString = process.env.IotHubConnectionString;
 if (!iotHubConnectionString) {
@@ -63,7 +64,7 @@ wss.on('connection', function connection(ws) {
       connection = db.getConnection( (err, connection)=> {
         if (err) throw (err);
         console.log ("DB connected successful: " + connection.threadId)
-        connection.query(`'SELECT * FROM users WHERE email = \'${dataObject.email}\' AND password = \'${dataObject.password}\''`, async(err, result) => {
+        connection.query('SELECT * FROM users WHERE email = \'example@gmail.com\' AND password = \'password\'', async(err, result) => {
           if (err) throw err;
           console.log(result);
         });
