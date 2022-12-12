@@ -148,7 +148,7 @@ const MapWrapper: React.FC<{}> = () => {
   // Send email
   const templateParams = {
     to_name: "Michael Jordan",
-    message: "Houstan, we have message",
+    message: "Your dog has escaped your defined geofence.",
   };
 
   function sendDogLocation() {
