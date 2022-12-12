@@ -602,7 +602,7 @@ int buildPacket(uint32_t tmst, uint8_t *buff_up, struct LoraUp LoraUp, bool inte
    res.concat("\", \"latitude\": ");
 
    k = 0;
-   char latitude[20] = '\0';
+   char latitude[20] = "";
    while (message[i] != ',') {
      latitude[k] = message[i];
      i++;
@@ -613,7 +613,7 @@ int buildPacket(uint32_t tmst, uint8_t *buff_up, struct LoraUp LoraUp, bool inte
    res.concat(", \"longitude\": ");
 
    k = 0;
-   char longitude[20] = '\0';
+   char longitude[20] = "";
    while ((message[i] != ',') && i != messageLength) {
      longitude[k] = message[i];
      i++;
