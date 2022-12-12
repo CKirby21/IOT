@@ -8,6 +8,7 @@
     "@capacitor/haptics": "4.0.1",
     "@capacitor/keyboard": "4.0.1",
     "@capacitor/status-bar": "4.0.1",
+    "@emailjs/browser": "^3.10.0",
     "@googlemaps/react-wrapper": "^1.1.35",
     "@ionic/react": "^6.0.0",
     "@ionic/react-router": "^6.0.0",
