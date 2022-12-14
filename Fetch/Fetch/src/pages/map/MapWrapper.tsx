@@ -49,8 +49,8 @@ const MapWrapper: React.FC<{}> = () => {
   const [radius, setRadius] = useState(minRadius);
   const [savedRadius, setSavedRadius] = useState<number>(minRadius);
   const [center, setCenter] = useState({lat: 0, lng: 0});
-  const [savedCenter, setSavedCenter] = useState({lat: 40.8207, lng: -96.7056});
-  const [deviceCoordinates, setDeviceCoordinates] = useState({lat: 0, lng: 0});
+  const [savedCenter, setSavedCenter] = useState({lat: 40.8206975, lng: -96.7055880});
+  const [deviceCoordinates, setDeviceCoordinates] = useState({lat: 40.8206975, lng: -96.7055880});
   const [deviceUpdateTime, setDeviceUpdateTime] = useState("");
 
   /* Functions for Radius */
@@ -99,6 +99,25 @@ const MapWrapper: React.FC<{}> = () => {
       return "";
     return coords.lat.toFixed(3) + ", " + coords.lng.toFixed(3);
   };
+  
+  /* Determine if dog is outside fence */
+  function haversine_distance(mk1 : {lat: number, lng: number }, mk2 : {lat: number, lng: number }) {
+    const R = 6367449 // Radius of the Earth in meters
+    const rlat1 = mk1.lat * (Math.PI/180); // Convert degrees to radians
+    const rlat2 = mk2.lat * (Math.PI/180); // Convert degrees to radians
+    const difflat = rlat2-rlat1; // Radian difference (latitudes)
+    const difflon = (mk2.lng-mk1.lng) * (Math.PI/180); // Radian difference (longitudes)
+
+    const d = 2 * R * Math.asin(Math.sqrt(Math.sin(difflat/2)*Math.sin(difflat/2)+Math.cos(rlat1)*Math.cos(rlat2)*Math.sin(difflon/2)*Math.sin(difflon/2)));
+    return d;
+  }
+
+  const checkDogLocation = () => {
+    const d = haversine_distance(savedCenter, deviceCoordinates);
+    console.log(d.toFixed(2));
+    if (d > savedRadius) 
+      console.log('email');
+  };
 
   /* Functions Device Coordinates from Backend */
   const webSocket = new WebSocket('ws://localhost:3000');
@@ -115,7 +134,8 @@ const MapWrapper: React.FC<{}> = () => {
       // Update the device data
       setDeviceCoordinates({lat: messageData.IotData.latitude, lng: messageData.IotData.longitude});
       setDeviceUpdateTime(messageData.MessageDate);
-
+      checkDogLocation();
+      
     } catch (err) {
       console.error(err);
     }
