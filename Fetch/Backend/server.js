@@ -41,6 +41,16 @@ wss.broadcast = (data) => {
       }
     }
   });
+  const dataObject = JSON.parse(data);
+  const q = `INSERT INTO location (latitude, longitude) VALUES (${dataObject.IotData.latitude}, ${dataObject.IotData.longitude})`;
+  connection = db.getConnection( (err, connection)=> {
+    if (err) throw (err);
+    console.log ("DB connected successful: " + connection.threadId)
+    connection.query(q, async(err, result) => {
+      if (err) throw err;
+      console.log("Location inserted");
+    });
+  });
 };
 
 // Setup database
