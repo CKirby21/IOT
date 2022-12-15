@@ -75,7 +75,10 @@ const MapWrapper: React.FC<{}> = () => {
   };
 
   const saveRadius = () => {
-    if (isValidRadius) setSavedRadius(radius);
+    if (isValidRadius) {
+      setSavedRadius(radius);
+      sendRadius(radius);
+    }
   };
 
   /* Functions for Center */
@@ -104,7 +107,10 @@ const MapWrapper: React.FC<{}> = () => {
   };
 
   const saveCenter = () => {
-    if (center.lat !== 0 && center.lng !== 0) setSavedCenter(center);
+    if (center.lat !== 0 && center.lng !== 0) {
+      setSavedCenter(center);
+    sendLatAndLong(center.lat, center.lng);
+    }
   };
 
   const formatCoordinates = (coords: any) => {
@@ -141,15 +147,27 @@ const MapWrapper: React.FC<{}> = () => {
         "hCAMVBKsuZNcevWIn"
       )
       .then(
-        (response) => {
+        (response: any) => {
           console.log("Success!", response.status, response.text);
         },
-        (err) => {
+        (err: any) => {
           console.log("Failed...", err);
         }
       );
     }
   };
+
+  function sendRadius(data: any) {
+    const t = {"radius": `${data}`};
+    const json = JSON.stringify(t);
+    webSocket.send(json);
+  }
+
+  function sendLatAndLong(lat: any, long: any) {
+    const t = {"latitude": `${lat}`, "longitude": `${long}`};
+    const json = JSON.stringify(t);
+    webSocket.send(json);
+  }
 
   /* Functions Device Coordinates from Backend */
   const webSocket = new WebSocket("ws://localhost:3000");
@@ -160,21 +178,27 @@ const MapWrapper: React.FC<{}> = () => {
 
       // time, latitude and longitude are required
       if (
-        !messageData.MessageDate ||
-        !messageData.IotData.latitude ||
-        !messageData.IotData.longitude
+        messageData.MessageDate &&
+        messageData.IotData.latitude &&
+        messageData.IotData.longitude
       ) {
-        return;
+        setDeviceCoordinates({
+          lat: messageData.IotData.latitude,
+          lng: messageData.IotData.longitude,
+        });
+        setDeviceUpdateTime(messageData.MessageDate);
+        checkDogLocation();
       }
 
-      // Update the device data
-      setDeviceCoordinates({
-        lat: messageData.IotData.latitude,
-        lng: messageData.IotData.longitude,
-      });
-      setDeviceUpdateTime(messageData.MessageDate);
-      checkDogLocation();
-      
+      if (
+        messageData.latitude &&
+        messageData.longitude &&
+        messageData.radius
+      ) {
+        const newCenter = {lat: +messageData.latitude, lng: +messageData.longitude}
+        setSavedCenter(newCenter);
+        setSavedRadius(messageData.radius);
+      }
     } catch (err) {
       console.error(err);
     }

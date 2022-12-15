@@ -41,16 +41,6 @@ wss.broadcast = (data) => {
       }
     }
   });
-  const dataObject = JSON.parse(data);
-  const q = `INSERT INTO location (latitude, longitude) VALUES (${dataObject.IotData.latitude}, ${dataObject.IotData.longitude})`;
-  connection = db.getConnection( (err, connection)=> {
-    if (err) throw (err);
-    console.log ("DB connected successful: " + connection.threadId)
-    connection.query(q, async(err, result) => {
-      if (err) throw err;
-      console.log("Location inserted");
-    });
-  });
 };
 
 // Setup database
@@ -67,22 +57,40 @@ wss.on('connection', function connection(ws) {
 
     const dataObject = JSON.parse(data);
     console.log(dataObject);
-    // Check if message has email and password
-    if (dataObject.email && dataObject.password) {
 
-      // Search for email
-      connection = db.getConnection( (err, connection)=> {
-        if (err) throw (err);
-        console.log ("DB connected successful: " + connection.threadId)
-        connection.query('SELECT * FROM users WHERE email = \'example@gmail.com\' AND password = \'password\'', async(err, result) => {
+    connection = db.getConnection( (err, connection)=> {
+      if (dataObject.email && dataObject.password) {
+        var q = 'SELECT * FROM user WHERE email = \'example@gmail.com\' AND password = \'password\'';
+        connection.query(q, async(err, result) => {
           if (err) throw err;
-          console.log(result);
+          else ws.send("email: true");
         });
-      });
+      }
 
-      // TODO move this inside connection. Send if email was found
-      ws.send("email: true");
-    }
+      if (dataObject.radius) {
+        var q = `UPDATE user SET radius = ${dataObject.radius}`;
+        connection.query(q, async(err, result) => {
+          if (err) throw err;
+        });
+      }
+
+      if (dataObject.latitude && dataObject.longitude) {
+        var q = `UPDATE user SET latitude = ${dataObject.latitude}, longitude = ${dataObject.longitude}`;
+        connection.query(q, async(err, result) => {
+          if (err) throw err;
+        });
+      }
+
+      var v = `SELECT * FROM user`;
+      connection.query(v, async(err, result) => {
+        if (err) throw err;
+        else {
+          const t = {"latitude": `${result[0].latitude}`, "longitude": `${result[0].longitude}`, "radius": `${result[0].radius}`};
+          const json = JSON.stringify(t);
+          ws.send(json);
+        }
+      });
+    });
   }); 
 });
 
