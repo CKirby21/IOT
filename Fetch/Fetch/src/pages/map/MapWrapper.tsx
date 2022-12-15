@@ -124,11 +124,31 @@ const MapWrapper: React.FC<{}> = () => {
     return d;
   }
 
+   // Send email
+   const templateParams = {
+    to_name: "Michael Jordan",
+    message: "Your dog has escaped your defined geofence.",
+  };
+
   const checkDogLocation = () => {
     const d = haversine_distance(savedCenter, deviceCoordinates);
-    console.log(d.toFixed(2));
-    if (d > savedRadius) 
-      console.log('email');
+    if (d > savedRadius) {
+      emailjs
+      .send(
+        "service_p9scn9d",
+        "template_olnfkfq",
+        templateParams,
+        "hCAMVBKsuZNcevWIn"
+      )
+      .then(
+        (response) => {
+          console.log("Success!", response.status, response.text);
+        },
+        (err) => {
+          console.log("Failed...", err);
+        }
+      );
+    }
   };
 
   /* Functions Device Coordinates from Backend */
@@ -159,30 +179,6 @@ const MapWrapper: React.FC<{}> = () => {
       console.error(err);
     }
   };
-
-  // Send email
-  const templateParams = {
-    to_name: "Michael Jordan",
-    message: "Your dog has escaped your defined geofence.",
-  };
-
-  function sendDogLocation() {
-    emailjs
-      .send(
-        "service_p9scn9d",
-        "template_olnfkfq",
-        templateParams,
-        "hCAMVBKsuZNcevWIn"
-      )
-      .then(
-        (response) => {
-          console.log("Success!", response.status, response.text);
-        },
-        (err) => {
-          console.log("Failed...", err);
-        }
-      );
-  }
 
   return (
     <IonPage>
@@ -284,12 +280,6 @@ const MapWrapper: React.FC<{}> = () => {
 
                   <IonItem>
                     <IonButton onClick={() => saveRadius()}>Save</IonButton>
-                  </IonItem>
-
-                  <IonItem>
-                    <IonButton onClick={() => sendDogLocation()}>
-                      Send Dog Location
-                    </IonButton>
                   </IonItem>
                 </IonCol>
               </IonRow>
