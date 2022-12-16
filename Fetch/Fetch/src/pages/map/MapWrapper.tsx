@@ -16,34 +16,48 @@ import {
 } from "@ionic/react";
 import React, { useState } from "react";
 import Header from "../../components/header/header";
-import { CircleF, GoogleMap, LoadScript, MarkerF} from '@react-google-maps/api';
+import {
+  CircleF,
+  GoogleMap,
+  LoadScript,
+  MarkerF,
+  OverlayViewF,
+} from "@react-google-maps/api";
+import emailjs from "@emailjs/browser";
 
 const mapContainerStyle = {
-  width: '1100px',
-  height: '600px'
+  width: "1100px",
+  height: "600px",
 };
 
 const circleOptions = {
-  strokeColor: '#FF0000',
+  strokeColor: "#FF0000",
   strokeOpacity: 0.8,
   strokeWeight: 2,
-  fillColor: '#FF0000',
+  fillColor: "#FF0000",
   fillOpacity: 0.35,
   clickable: false,
   draggable: false,
   editable: false,
-  visible: true
-}
+  visible: true,
+};
+
+const overlayStyle = {
+  background: "white",
+  border: "1px solid #ccc",
+  padding: 5,
+};
 
 const MapWrapper: React.FC<{}> = () => {
-  
   const minRadius = 20;
   const maxRadius = 1000;
   const [isValidRadius, setIsValidRadius] = useState<boolean>();
   const [radius, setRadius] = useState(minRadius);
   const [savedRadius, setSavedRadius] = useState<number>(minRadius);
   const [center, setCenter] = useState({lat: 0, lng: 0});
-  const [savedCenter, setSavedCenter] = useState({lat: 40.8207, lng: -96.7056});
+  const [savedCenter, setSavedCenter] = useState({lat: 40.8206975, lng: -96.7055880});
+  const [deviceCoordinates, setDeviceCoordinates] = useState({lat: 40.8206975, lng: -96.7055880});
+  const [deviceUpdateTime, setDeviceUpdateTime] = useState("");
 
   /* Functions for Radius */
   const validateRadius = (ev: Event) => {
@@ -61,37 +75,134 @@ const MapWrapper: React.FC<{}> = () => {
   };
 
   const saveRadius = () => {
-    if (isValidRadius) setSavedRadius(radius);
+    if (isValidRadius) {
+      setSavedRadius(radius);
+      sendRadius(radius);
+    }
   };
-  
+
   /* Functions for Center */
-  function getCenterSuccess(position: { coords: any; }) {
-    setCenter({lat: position.coords.latitude, lng: position.coords.longitude});
+  function getCenterSuccess(position: { coords: any }) {
+    setCenter({
+      lat: position.coords.latitude,
+      lng: position.coords.longitude,
+    });
   }
-  
-  function getCenterError(err: { code: any; message: any; }) {
+
+  function getCenterError(err: { code: any; message: any }) {
     console.warn(`ERROR(${err.code}): ${err.message}`);
   }
-  
+
   const getCenter = () => {
     const options = {
       enableHighAccuracy: true,
       timeout: 5000,
-      maximumAge: 0
+      maximumAge: 0,
     };
-    navigator.geolocation.getCurrentPosition(getCenterSuccess, getCenterError, options);
+    navigator.geolocation.getCurrentPosition(
+      getCenterSuccess,
+      getCenterError,
+      options
+    );
   };
 
   const saveCenter = () => {
-    if (center.lat !== 0 && center.lng !== 0) setSavedCenter(center);
+    if (center.lat !== 0 && center.lng !== 0) {
+      setSavedCenter(center);
+    sendLatAndLong(center.lat, center.lng);
+    }
   };
 
-  const formatCenter = (centerToFormat: any) => {
-    if (centerToFormat.lat === 0 && centerToFormat.lng === 0) 
-      return "";
-    return centerToFormat.lat.toFixed(3) + ", " + centerToFormat.lng.toFixed(3);
+  const formatCoordinates = (coords: any) => {
+    if (coords.lat === 0 && coords.lng === 0) return "";
+    return coords.lat.toFixed(3) + ", " + coords.lng.toFixed(3);
+  };
+  
+  /* Determine if dog is outside fence */
+  function haversine_distance(mk1 : {lat: number, lng: number }, mk2 : {lat: number, lng: number }) {
+    const R = 6367449 // Radius of the Earth in meters
+    const rlat1 = mk1.lat * (Math.PI/180); // Convert degrees to radians
+    const rlat2 = mk2.lat * (Math.PI/180); // Convert degrees to radians
+    const difflat = rlat2-rlat1; // Radian difference (latitudes)
+    const difflon = (mk2.lng-mk1.lng) * (Math.PI/180); // Radian difference (longitudes)
+
+    const d = 2 * R * Math.asin(Math.sqrt(Math.sin(difflat/2)*Math.sin(difflat/2)+Math.cos(rlat1)*Math.cos(rlat2)*Math.sin(difflon/2)*Math.sin(difflon/2)));
+    return d;
+  }
+
+   // Send email
+   const templateParams = {
+    to_name: "Michael Jordan",
+    message: "Your dog has escaped your defined geofence.",
   };
 
+  const checkDogLocation = () => {
+    const d = haversine_distance(savedCenter, deviceCoordinates);
+    if (d > savedRadius) {
+      emailjs
+      .send(
+        "service_p9scn9d",
+        "template_olnfkfq",
+        templateParams,
+        "hCAMVBKsuZNcevWIn"
+      )
+      .then(
+        (response: any) => {
+          console.log("Success!", response.status, response.text);
+        },
+        (err: any) => {
+          console.log("Failed...", err);
+        }
+      );
+    }
+  };
+
+  function sendRadius(data: any) {
+    const t = {"radius": `${data}`};
+    const json = JSON.stringify(t);
+    webSocket.send(json);
+  }
+
+  function sendLatAndLong(lat: any, long: any) {
+    const t = {"latitude": `${lat}`, "longitude": `${long}`};
+    const json = JSON.stringify(t);
+    webSocket.send(json);
+  }
+
+  /* Functions Device Coordinates from Backend */
+  const webSocket = new WebSocket("ws://localhost:3000");
+  webSocket.onmessage = function onMessage(message) {
+    try {
+      const messageData = JSON.parse(message.data);
+      console.log(messageData);
+
+      // time, latitude and longitude are required
+      if (
+        messageData.MessageDate &&
+        messageData.IotData.latitude &&
+        messageData.IotData.longitude
+      ) {
+        setDeviceCoordinates({
+          lat: messageData.IotData.latitude,
+          lng: messageData.IotData.longitude,
+        });
+        setDeviceUpdateTime(messageData.MessageDate);
+        checkDogLocation();
+      }
+
+      if (
+        messageData.latitude &&
+        messageData.longitude &&
+        messageData.radius
+      ) {
+        const newCenter = {lat: +messageData.latitude, lng: +messageData.longitude}
+        setSavedCenter(newCenter);
+        setSavedRadius(messageData.radius);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   return (
     <IonPage>
@@ -104,47 +215,59 @@ const MapWrapper: React.FC<{}> = () => {
         <Header />
         <IonGrid>
           <IonRow>
-
-
-            <LoadScript
-            googleMapsApiKey="AIzaSyBYrl_wYHZ1QBg_0CNqu7XOKbzi9sIjJ2E"
-            >
+            <LoadScript googleMapsApiKey="AIzaSyBYrl_wYHZ1QBg_0CNqu7XOKbzi9sIjJ2E">
               <GoogleMap
                 mapContainerStyle={mapContainerStyle}
                 center={savedCenter}
                 zoom={17}
               >
-                <MarkerF
-                  // icon={"https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png"}
-                  position={savedCenter}
+                {/* Saved Fence Coordinates */}
+                <MarkerF position={savedCenter} />
+                <CircleF
+                  center={savedCenter}
+                  radius={savedRadius}
+                  options={circleOptions}
                 />
-                <CircleF center={savedCenter} radius={savedRadius} options={circleOptions}/>
+
+                {/* Dog's Coordinates */}
+                <OverlayViewF
+                  position={deviceCoordinates}
+                  mapPaneName="floatPane"
+                >
+                  <div style={overlayStyle}>
+                    <p>
+                      {"Last Updated: " +
+                        deviceUpdateTime.replace(/[A-Z]/gm, " ")}
+                    </p>
+                  </div>
+                </OverlayViewF>
+                <MarkerF label="Dog" position={deviceCoordinates} />
               </GoogleMap>
             </LoadScript>
-
 
             <IonGrid fixed={true}>
               <IonRow>
                 <IonCol>
-
                   <IonItem>
                     <IonText>
                       <h1>Fence Settings</h1>
                     </IonText>
                   </IonItem>
 
-                  <IonItem/>
+                  <IonItem />
 
                   <IonItem>
                     <IonLabel>Saved Center:</IonLabel>
                     <IonInput
-                      value={formatCenter(savedCenter)}
+                      value={formatCoordinates(savedCenter)}
                       disabled={true}
                     ></IonInput>
                   </IonItem>
 
                   <IonItem>
-                    <IonLabel>{"New Center: " + formatCenter(center)}</IonLabel>
+                    <IonLabel>
+                      {"New Center: " + formatCoordinates(center)}
+                    </IonLabel>
                     <IonButton onClick={() => getCenter()}>Fetch</IonButton>
                   </IonItem>
 
@@ -152,7 +275,7 @@ const MapWrapper: React.FC<{}> = () => {
                     <IonButton onClick={() => saveCenter()}>Save</IonButton>
                   </IonItem>
 
-                  <IonItem/>
+                  <IonItem />
 
                   <IonItem>
                     <IonLabel>Saved Radius:</IonLabel>
@@ -165,7 +288,8 @@ const MapWrapper: React.FC<{}> = () => {
                   <IonItem
                     className={`${isValidRadius && "ion-valid"} ${
                       isValidRadius === false && "ion-invalid"
-                    }`}>
+                    }`}
+                  >
                     <IonLabel>New Radius:</IonLabel>
                     <IonInput
                       type="number"
@@ -173,19 +297,17 @@ const MapWrapper: React.FC<{}> = () => {
                       onIonInput={(event) => validateRadius(event)}
                     ></IonInput>
                     <IonNote slot="error">
-                      Radius must be a number between {minRadius} and {maxRadius} meters
+                      Radius must be a number between {minRadius} and{" "}
+                      {maxRadius} meters
                     </IonNote>
                   </IonItem>
 
                   <IonItem>
                     <IonButton onClick={() => saveRadius()}>Save</IonButton>
                   </IonItem>
-
                 </IonCol>
               </IonRow>
             </IonGrid>
-
-
           </IonRow>
         </IonGrid>
       </IonContent>
